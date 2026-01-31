@@ -29,7 +29,7 @@ open Ast
 %token BOOL INT
 
 %type <Ast.expr> expr
-%type <Ast.expr list> exprs
+%type <Ast.expr list> list(expr)
 %type <Ast.cmd list> cmds
 %type <Ast.cmd list> prog
 
@@ -48,34 +48,19 @@ cmds:
 
 def:
   CONST id=IDENT ty=_type e=expr { ASTConst(id, ty, e) } 
-| FUN id=IDENT ty=_type LBRA as_=args RBRA e=expr { ASTFun(id, ty, as_, e) }
-| FUN REC id=IDENT ty=_type LBRA as_=args RBRA e=expr { ASTFunREC(id, ty, as_, e) }
-;
-
-defs:
-  d=def                     { [d] }
-| d=def SEMCOL ds=defs      { d :: ds }
+| FUN id=IDENT ty=_type LBRA args=list(arg) RBRA e=expr { ASTFun(id, ty, args, e) }
+| FUN REC id=IDENT ty=_type LBRA args=list(arg) RBRA e=expr { ASTFunREC(id, ty, args, e) }
 ;
 
 _type:
   BOOL                          { ASTBool }
 | INT                           { ASTInt }
-| LPAR ts=types ARROW rt=_type RPAR
-    { ASTFunT(ts, rt) }
+| LPAR ts=list(_type) ARROW rt=_type RPAR { ASTFunT(ts, rt) }
 ;
 
-types:
-  t=_type                     { [t] }
-| t=_type STAR ts=types       { t :: ts }
-;
 
 arg:
   id=IDENT COL ty=_type        { ASTArg(id, ty) }
-;
-
-args:
-  a=arg                        { [a] }
-| a=arg COMMA as_=args         { a :: as_ }
 ;
 
 stat:
@@ -88,14 +73,8 @@ expr:
 | LPAR IF c=expr t=expr f=expr RPAR { ASTIf(c, t, f) }
 | LPAR AND a=expr b=expr RPAR { ASTAnd(a, b) } 
 | LPAR OR a=expr b=expr RPAR { ASTOr(a, b) }
-| LPAR fn=expr es=exprs RPAR { ASTApp(fn, es) }
-| LBRA as_=args RBRA body=expr { ASTLambda(as_, body) }
+| LPAR fn=expr es=list(expr) RPAR { ASTApp(fn, es) }
+| LBRA args=list(arg) RBRA body=expr { ASTLambda(args, body) }
 ;
-
-exprs:
-  e=expr                        { [e] }
-| e=expr es=exprs               { e :: es }
-;
-
 
 %%
