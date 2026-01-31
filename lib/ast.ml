@@ -34,7 +34,9 @@ type def =
   |ASTFunREC of string * _type * arg list * expr
 
 type cmd =
-  | ASTCmds of def list * stat
+  ASTStat of stat
+  (* On peut avoir des imbrications de listes !!*)
+  | ASTCmds of cmd list
 
 
 

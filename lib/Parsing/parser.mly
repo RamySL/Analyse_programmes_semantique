@@ -38,62 +38,64 @@ open Ast
 %%
 
 prog: 
-  LBRA cmds RBRA        { $2 }
+  LBRA cs=cmds RBRA        { cs }
 ;
 
 cmds:
-  stat                  { ASTCmds ([], $1) }
-| defs SEMCOL stat      { ASTCmds ($1, $3) }
+  st=stat                  { [ASTStat(st)] }
+| ds=defs SEMCOL cs=cmds   { ASTCmds (ds, cs) }
 ;
 
 def:
-  CONST IDENT _type expr                { ASTConst($2, $3, $4) } 
-| FUN IDENT _type LBRA args RBRA expr   { ASTFun($2, $3, $5, $7) }
-| FUN REC IDENT _type LBRA args RBRA expr { ASTFunREC($3, $4, $6, $8) }
+  CONST id=IDENT ty=_type e=expr { ASTConst(id, ty, e) } 
+| FUN id=IDENT ty=_type LBRA as_=args RBRA e=expr { ASTFun(id, ty, as_, e) }
+| FUN REC id=IDENT ty=_type LBRA as_=args RBRA e=expr { ASTFunREC(id, ty, as_, e) }
 ;
 
 defs:
-  def                     { [$1] }
-  |def SEMCOL defs        { $1::$3 }
+  d=def                     { [d] }
+| d=def SEMCOL ds=defs      { d :: ds }
 ;
 
 _type:
   BOOL                          { ASTBool }
 | INT                           { ASTInt }
-| LPAR types ARROW _type RPAR { ASTFunT($2, $4) }
+| LPAR ts=types ARROW rt=_type RPAR
+    { ASTFunT(ts, rt) }
 ;
 
 types:
-  _type                     { [$1] }
-| _type STAR types          { $1 :: $3 }
+  t=_type                     { [t] }
+| t=_type STAR ts=types       { t :: ts }
 ;
 
 arg:
-  IDENT COL _type           { ASTArg($1, $3) }
+  id=IDENT COL ty=_type        { ASTArg(id, ty) }
 ;
 
 args:
-  arg                           { [$1] }
-| arg COMMA args                { $1 :: $3 }
+  a=arg                        { [a] }
+| a=arg COMMA as_=args         { a :: as_ }
 ;
 
 stat:
-  ECHO expr                     { ASTEcho($2) }
+  ECHO e=expr                  { ASTEcho(e) }
 ;
 
 expr:
-  NUM                           { ASTNum($1) }
-| IDENT                         { ASTId($1) }
-| LPAR IF expr expr expr RPAR   { ASTIf($3, $4, $5) }
-| LPAR AND expr expr RPAR       { ASTAnd($3, $4) } 
-| LPAR OR expr expr RPAR        { ASTOr($3, $4) }
-| LPAR expr exprs RPAR          { ASTApp($2, $3) }
-| LBRA args RBRA expr           { ASTLambda($2, $4) }
+  n=NUM                         { ASTNum(n) }
+| id=IDENT                      { ASTId(id) }
+| LPAR IF c=expr t=expr f=expr RPAR { ASTIf(c, t, f) }
+| LPAR AND a=expr b=expr RPAR { ASTAnd(a, b) } 
+| LPAR OR a=expr b=expr RPAR { ASTOr(a, b) }
+| LPAR fn=expr es=exprs RPAR { ASTApp(fn, es) }
+| LBRA as_=args RBRA body=expr { ASTLambda(as_, body) }
 ;
 
 exprs:
-  expr                          { [$1] }
-| expr exprs                    { $1 :: $2 }
+  e=expr                        { [e] }
+| e=expr es=exprs               { e :: es }
 ;
+
 
 %%
