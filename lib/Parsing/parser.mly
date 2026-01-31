@@ -42,14 +42,19 @@ prog:
 ;
 
 cmds:
-  stat                  { [ASTStat($1)] }
-| def SEMCOL cmds       { $1 :: $3 }
+  stat                  { ASTCmds ([], $1) }
+| defs SEMCOL stat      { ASTCmds ($1, $3) }
 ;
 
 def:
   CONST IDENT _type expr                { ASTConst($2, $3, $4) } 
 | FUN IDENT _type LBRA args RBRA expr   { ASTFun($2, $3, $5, $7) }
 | FUN REC IDENT _type LBRA args RBRA expr { ASTFunREC($3, $4, $6, $8) }
+;
+
+defs:
+  def                     { [$1] }
+  |def SEMCOL defs        { $1::$3 }
 ;
 
 _type:

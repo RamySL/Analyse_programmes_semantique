@@ -26,10 +26,11 @@ let pp_stat fmt s =
   ASTEcho e -> fprintf fmt "echo(%a)" pp_expr e
 let pp_cmd fmt c =
   match c with
-  ASTStat s ->
+  ASTCmds (cs, s) ->
     fprintf fmt "stat(%a)" pp_stat s
 let pp_cmds fmt cmds =
   match cmds with
+  ASTCmds (cs, s)  -> pp_cmd fmt c
   c :: [] -> pp_cmd fmt c
   | _ -> failwith "TODO"
 let pp_prog fmt p =

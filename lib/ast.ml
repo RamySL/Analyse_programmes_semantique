@@ -27,13 +27,14 @@ type expr =
 type stat =
     ASTEcho of expr
 
-type cmd =
-    ASTStat of stat
-    |
 
 type def = 
   ASTConst of string * _type * expr
   |ASTFun of string * _type * arg list * expr
   |ASTFunREC of string * _type * arg list * expr
+
+type cmd =
+  | ASTCmds of def list * stat
+
 
 
