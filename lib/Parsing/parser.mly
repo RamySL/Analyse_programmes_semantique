@@ -28,34 +28,35 @@ open Ast
 %token ECHO CONST FUN REC IF AND OR
 %token BOOL INT
 
-%type <Ast.expr> expr
-%type <Ast.expr list> list(expr)
-%type <Ast.cmd list> cmds
-%type <Ast.cmd list> prog
+%type <Ast.cmd> prog
 
 %start prog
 
 %%
+
+(*
+  - separated_list(COMMA, option(expression)). Trouvé dans https://gallium.inria.fr/~fpottier/menhir/manual.pdf page 11
+*)
 
 prog: 
   LBRA cs=cmds RBRA        { cs }
 ;
 
 cmds:
-  st=stat                  { [ASTStat(st)] }
-| ds=defs SEMCOL cs=cmds   { ASTCmds (ds, cs) }
-;
+  st=stat                  { ASTStat(st) }
+| ds=separated_list(SEMCOL, def) SEMCOL cs=cmds { ASTCmds({defs=ds; last=cs}) }
 
+;
 def:
   CONST id=IDENT ty=_type e=expr { ASTConst(id, ty, e) } 
-| FUN id=IDENT ty=_type LBRA args=list(arg) RBRA e=expr { ASTFun(id, ty, args, e) }
-| FUN REC id=IDENT ty=_type LBRA args=list(arg) RBRA e=expr { ASTFunREC(id, ty, args, e) }
+| FUN id=IDENT ty=_type LBRA args=separated_list(COMMA, arg) RBRA e=expr { ASTFun(id, ty, args, e) }
+| FUN REC id=IDENT ty=_type LBRA args=separated_list(COMMA, arg) RBRA e=expr { ASTFunREC(id, ty, args, e) }
 ;
 
 _type:
   BOOL                          { ASTBool }
 | INT                           { ASTInt }
-| LPAR ts=list(_type) ARROW rt=_type RPAR { ASTFunT(ts, rt) }
+| LPAR ts=separated_list(STAR, _type) ARROW rt=_type RPAR { ASTFunT(ts, rt) }
 ;
 
 
@@ -74,7 +75,7 @@ expr:
 | LPAR AND a=expr b=expr RPAR { ASTAnd(a, b) } 
 | LPAR OR a=expr b=expr RPAR { ASTOr(a, b) }
 | LPAR fn=expr es=list(expr) RPAR { ASTApp(fn, es) }
-| LBRA args=list(arg) RBRA body=expr { ASTLambda(args, body) }
+| LBRA args=separated_list(COMMA, arg) RBRA body=expr { ASTLambda(args, body) }
 ;
 
 %%

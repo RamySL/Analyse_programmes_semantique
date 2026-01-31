@@ -1,5 +1,4 @@
 open Aps_syntax
-(* open PrologTerm *)
 open PrologTerm
 open Manip_sys
 
