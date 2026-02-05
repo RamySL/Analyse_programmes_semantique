@@ -25,9 +25,21 @@ add_list_context([(a,bool), (b, int), (c, test)], [(d,string), (e,float)], G).
 
 add_list_context(G, [], G).
 add_list_context(G, [(X, T) | TAIL], [(X, T) | TAIL2]) :- add_list_context(G, TAIL, TAIL2).
+
+
+/**
+Vérifie que les type des expressions EXPRS match celui de TYPES dans l'ordre
+*/
+
+match_exprs_types(G, [], []).
+
+match_exprs_types(G, [E | ES], [T | TS]) :-  
+    type_expr(G, E, T),
+    match_exprs_types(G, ES, TS).
+
  
 /* **** */
-type_prog(_, prog(p), void). 
+type_prog(_, prog(P), void). 
 
 /** Defintions **/
 
@@ -51,6 +63,13 @@ type_def(G, funRec(id(F), T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G
 
 /* Commands */
 
+type_cmds(G, cmds(D, CS), void) :- 
+    type_def(G, D, NEW_G),
+    type_cmds(NEW_G, CS, void).
+
+type_cmds(G, S, void) :- 
+    type_stat(G, S, void).
+
 
 /* Statements */
 type_stat(_, echo(E), void) :- type_expr(_,E,int).
@@ -60,12 +79,26 @@ type_stat(_, echo(E), void) :- type_expr(_,E,int).
 type_expr(_, num(_), int).
 type_expr(_, true, bool).
 type_expr(_, false, bool).
+type_expr(_, false, bool).
+type_expr(_, false, bool).
 /** Rajouter un tfun() ? un nouveau type */
 type_expr(G, if(E1,E2,E3), T) :- type_expr(G, E1, bool), type_expr(G, E2, T), type_expr(G, E3, T).
 type_expr(G, and(E1,E2), bool) :- type_expr(G, E1, bool), type_expr(G, E2, bool).
 type_expr(G, or(E1,E2), bool) :- type_expr(G, E1, bool), type_expr(G, E2, bool).
 typr_expr(G, id(X), T) :- find(G, X, T).
-type_expr(G, app(FCT, ARGS), T) :-
+type_expr(G, app(FCT, ARGS), T_RET) :-
+    type_expr(G, FCT, (T_PARAMS, T_RET)),
+    match_exprs_types(G, ARGS, T_PARAMS).
+
+type_expr(G, app(FCT, ARGS), T_RET) :-
+    type_expr(G, FCT, (T_PARAMS, T_RET)),
+    match_exprs_types(G, ARGS, T_PARAMS).
+
+type_expr(G, abs(ID_T_PARAMS, BODY), (T_PARAMS, T_RET)) :-
+    add_list_context(G, ID_T_PARAMS, NEW_G),
+    type_expr(NEW_G, BODY, T_RET),
+    get_types(ID_T_PARAMS, T_PARAMS).
+
 
 
 
