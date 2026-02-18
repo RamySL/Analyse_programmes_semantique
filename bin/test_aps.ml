@@ -1,9 +1,12 @@
 open Aps_syntax.Manip_sys
 open Aps_syntax.PrologTerm
 
-let l_test_0 = [(testfile_name 0 0, "OK")]
-
-
+let l_test_0 = [(testfile_name 0 0, "OK");
+                (testfile_name 0 1, "KO"); (* Var inex*)
+                (testfile_name 0 2, "KO"); (* Var inex*)
+                (testfile_name 0 3, "KO"); (* Var inex*)
+                (testfile_name 0 4, "OK")
+              ]
 
 let test_prologTerm (l_test : string list) =
 List.fold_right

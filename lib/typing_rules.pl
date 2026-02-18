@@ -1,11 +1,28 @@
 
 main :- read(user_input, X), type_check(X).
+
+type_check(prog(P)) :- type_prog(prog(P), void), write("OK\n").
+type_check(_) :- write("KO\n").
+
+context_init([
+    (true, bool),
+    (false, bool),
+    (not, ([bool], bool)),
+    (eq, ([int, int], bool)),
+    (lt, ([int, int], bool)),
+    (add, ([int, int], int)),
+    (sub, ([int, int], int)),
+    (mul, ([int, int], int)),
+    (div, ([int, int], int))
+]).
 /** !! Il ya une association entre ce qui est choisit dans prologTerm.ml et les noms d'atom ici **/
 /**
     Utils
 */
 
 find([(X,T)|_], X, T).
+
+/* find([(true, bool)], true, T). */ 
 find([_|XS], X, T) :- find(XS, X, T).
 
 /**
@@ -16,8 +33,8 @@ contient tous les types qui sont dans ID_Ts et dans le meme ordre
 get_types([(a,bool), (b, int), (c, test)], TS).
 **/
 get_types([], []).
-get_types([(X, T)], [T]).
-get_types([(X, T) | TAIL], [T | TS]) :- get_types(TAIL, TS).
+get_types([(_, T)], [T]).
+get_types([(_, T) | TAIL], [T | TS]) :- get_types(TAIL, TS).
 /**
 NEW_G représente bien un contexte dans lequel on a TO_ADD @ G quand ?
 add_list_context([(a,bool), (b, int), (c, test)], [(d,string), (e,float)], G).
@@ -31,15 +48,17 @@ add_list_context(G, [(X, T) | TAIL], [(X, T) | TAIL2]) :- add_list_context(G, TA
 Vérifie que les type des expressions EXPRS match celui de TYPES dans l'ordre
 */
 
-match_exprs_types(G, [], []).
+match_exprs_types(_, [], []).
 
 match_exprs_types(G, [E | ES], [T | TS]) :-  
     type_expr(G, E, T),
     match_exprs_types(G, ES, TS).
 
- 
-/* **** */
-type_prog(_, prog(P), void). 
+/* Prog */
+
+type_prog(prog(P), void) :- 
+    context_init(G0),
+    type_cmds(G0, P, void).
 
 /** Defintions **/
 
@@ -54,7 +73,7 @@ type_def(G, fun(id(F), T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G]) 
     add_list_context(G, ID_T_PARAMS, G_EVAL),
     type_expr(G_EVAL, BODY, T_RET).
 
-type_def(G, funRec(id(F), T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G]) :- 
+type_def(G, fun_rec(id(F), T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G]) :- 
     get_types(ID_T_PARAMS, T_PARAMS),
     add_list_context(G, ID_T_PARAMS, G_EVAL),
     /** La différence avec l'ancienne c'est dans l'env d'eval on a mis la fonction elle même **/
@@ -62,44 +81,37 @@ type_def(G, funRec(id(F), T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G
 
 
 /* Commands */
-
-type_cmds(G, cmds(D, CS), void) :- 
+type_cmds(G, defs(D, CS), void) :- 
     type_def(G, D, NEW_G),
     type_cmds(NEW_G, CS, void).
 
-type_cmds(G, S, void) :- 
+type_cmds(G, end(S), void) :- 
     type_stat(G, S, void).
 
 
 /* Statements */
-type_stat(_, echo(E), void) :- type_expr(_,E,int).
+type_stat(G, echo(E), void) :- type_expr(G,E,int).
 
 
 /* Expressions */
 type_expr(_, num(_), int).
+/* TODO: On y'accedra jamais à ces deux, pcq on va passer par id(true) */
 type_expr(_, true, bool).
-type_expr(_, false, bool).
-type_expr(_, false, bool).
 type_expr(_, false, bool).
 /** Rajouter un tfun() ? un nouveau type */
 type_expr(G, if(E1,E2,E3), T) :- type_expr(G, E1, bool), type_expr(G, E2, T), type_expr(G, E3, T).
 type_expr(G, and(E1,E2), bool) :- type_expr(G, E1, bool), type_expr(G, E2, bool).
 type_expr(G, or(E1,E2), bool) :- type_expr(G, E1, bool), type_expr(G, E2, bool).
-typr_expr(G, id(X), T) :- find(G, X, T).
+type_expr(G, id(X), T) :- find(G, X, T).
 type_expr(G, app(FCT, ARGS), T_RET) :-
     type_expr(G, FCT, (T_PARAMS, T_RET)),
     match_exprs_types(G, ARGS, T_PARAMS).
-
 type_expr(G, app(FCT, ARGS), T_RET) :-
     type_expr(G, FCT, (T_PARAMS, T_RET)),
     match_exprs_types(G, ARGS, T_PARAMS).
-
 type_expr(G, abs(ID_T_PARAMS, BODY), (T_PARAMS, T_RET)) :-
     add_list_context(G, ID_T_PARAMS, NEW_G),
     type_expr(NEW_G, BODY, T_RET),
     get_types(ID_T_PARAMS, T_PARAMS).
 
 
-
-
-type_check(prog) :- write("KO\n").

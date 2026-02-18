@@ -11,21 +11,17 @@ open Ast
 open Format
 
 let sep_cma fmt () = fprintf fmt ", "
-let sep_star fmt () = fprintf fmt "* "
-let sep_semcol fmt () = fprintf fmt "; "
                     (* retourne une fct qui prend une fmt et une liste*)
-let pp_lst_star p = pp_print_list ~pp_sep:sep_cma p
 let pp_lst_cma p = pp_print_list ~pp_sep:sep_cma p
-let pp_lst_semcol p = pp_print_list ~pp_sep:sep_semcol p 
 
 let rec pp_type fmt t = 
   match t with 
     ASTBool -> fprintf fmt "bool"
     |ASTInt -> fprintf fmt "int"
     |ASTFunT (ts, ret) -> 
-      fprintf fmt "%a->%a" pp_types ts pp_type ret
-
-and pp_types fmt ts = pp_lst_star pp_type fmt ts
+      fprintf fmt "([%a],%a)" pp_types ts pp_type ret
+ 
+and pp_types fmt ts = pp_lst_cma pp_type fmt ts
 
 let rec pp_arg fmt arg = 
   match arg with 
@@ -38,7 +34,7 @@ let rec pp_expr fmt e =
   | ASTNum n ->
       fprintf fmt "num(%d)" n
   | ASTId x ->
-      fprintf fmt "ident(%s)" x
+      fprintf fmt "id(%s)" x
   | ASTIf (e1, e2, e3) ->
       fprintf fmt "if(%a,%a,%a)" pp_expr e1 pp_expr e2 pp_expr e3
   | ASTAnd (e1, e2) ->
@@ -46,9 +42,9 @@ let rec pp_expr fmt e =
   | ASTOr (e1, e2) ->
       fprintf fmt "or(%a,%a)" pp_expr e1 pp_expr e2
   | ASTApp (e, es) ->
-      fprintf fmt "app(%a,(%a))" pp_expr e pp_exprs es
+      fprintf fmt "app(%a,[%a])" pp_expr e pp_exprs es
   | ASTLambda (args, body) ->
-      fprintf fmt "lambda([%a],%a)" pp_args args pp_expr body
+      fprintf fmt "abs([%a],%a)" pp_args args pp_expr body
 
 and pp_exprs fmt es = pp_lst_cma pp_expr fmt es
 
@@ -56,22 +52,28 @@ let rec pp_stat fmt s =
   match s with
     ASTEcho e -> fprintf fmt "echo(%a)" pp_expr e
 
+(*!TODO: Complexité !!! ( Change le AST)*)
 and pp_cmds fmt c =
   match c with
-    ASTStat s -> pp_stat fmt s
-    |ASTCmds {defs; last} -> 
-      fprintf fmt "%a; %a" pp_defs defs pp_cmds last
+    ASTStat s -> fprintf fmt "end(%a)" pp_stat s
+    |ASTCmds {defs=[]; last} -> 
+      (*Note: précondition que last est un ASTStat et donc on tombe 
+      dans le premier match*)
+      fprintf fmt "end(%a)" pp_cmds last
+    |ASTCmds {defs=d::ds; last} -> 
+      fprintf fmt "defs(%a, %a)" pp_def d pp_cmds (ASTCmds ({defs=ds; last}))
 
+(* TODO: vérifie que c'est pas mauvais d'avoir en id String et pas ASTid*)
 and pp_def fmt def = 
   match def with 
       ASTConst(id, ty, e) -> 
         fprintf fmt "const(%s,%a,%a)" id pp_type ty pp_expr e
     | ASTFun(id, ty, args, e)-> 
-        fprintf fmt "fun(%s,%a,(%a),%a)" id pp_type ty pp_args args pp_expr e
+        fprintf fmt "fun(%s,%a,[%a],%a)" id pp_type ty pp_args args pp_expr e
     | ASTFunREC(id, ty, args, e)->
-        fprintf fmt "fun_rec(%s,%a,(%a),%a)" id pp_type ty pp_args args pp_expr e
+        fprintf fmt "fun_rec(%s,%a,[%a],%a)" id pp_type ty pp_args args pp_expr e
 
-and pp_defs fmt defs = pp_lst_semcol pp_def fmt defs
+and pp_defs fmt defs = pp_lst_cma pp_def fmt defs
 
 let pp_prog fmt p =
   fprintf fmt "prog(%a).\n" pp_cmds p
