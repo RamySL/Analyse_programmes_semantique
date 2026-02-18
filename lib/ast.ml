@@ -7,6 +7,8 @@
 (* == Fichier: ast.ml                                                      == *)
 (* ==  Arbre de syntaxe abstraite                                          == *)
 (* ========================================================================== *)
+
+(*TODO: ça a du sens de faire des déf recursives ?*)
 type _type = 
    ASTBool
   | ASTInt
@@ -40,5 +42,5 @@ type cmd =
   même si j'aurais pu mettre une liste directement*)
   | ASTCmds of {defs: def list; last: cmd}
 
-
-
+type prog = 
+  ASTProg of cmd
