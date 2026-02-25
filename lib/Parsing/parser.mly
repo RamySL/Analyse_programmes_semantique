@@ -28,7 +28,7 @@ open Ast
 %token ECHO CONST FUN REC IF AND OR
 %token BOOL INT
 
-%type <Ast.cmd> prog
+%type <Ast.prog> prog
 
 %start prog
 
@@ -39,7 +39,7 @@ open Ast
 *)
 
 prog: 
-  LBRA cs=cmds RBRA        { cs }
+  LBRA cs=cmds RBRA        { ASTProg cs }
 ;
 
 cmds:

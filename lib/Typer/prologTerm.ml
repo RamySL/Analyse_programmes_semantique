@@ -75,8 +75,8 @@ and pp_def fmt def =
 
 and pp_defs fmt defs = pp_lst_cma pp_def fmt defs
 
-let pp_prog fmt p =
-  fprintf fmt "prog(%a).\n" pp_cmds p
+let pp_prog fmt = function
+  ASTProg p -> fprintf fmt "prog(%a).\n" pp_cmds p
 
 
 

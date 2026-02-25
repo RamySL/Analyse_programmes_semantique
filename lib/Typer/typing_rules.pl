@@ -95,10 +95,10 @@ type_stat(G, echo(E), void) :- type_expr(G,E,int).
 
 /* Expressions */
 type_expr(_, num(_), int).
-/* TODO: On y'accedra jamais à ces deux, pcq on va passer par id(true) */
+/* TODO: On y'accedra jamais à ces deux, pcq on va passer par id(true)
 type_expr(_, true, bool).
 type_expr(_, false, bool).
-/** Rajouter un tfun() ? un nouveau type */
+*/
 type_expr(G, if(E1,E2,E3), T) :- type_expr(G, E1, bool), type_expr(G, E2, T), type_expr(G, E3, T).
 type_expr(G, and(E1,E2), bool) :- type_expr(G, E1, bool), type_expr(G, E2, bool).
 type_expr(G, or(E1,E2), bool) :- type_expr(G, E1, bool), type_expr(G, E2, bool).
