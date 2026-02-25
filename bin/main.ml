@@ -1,6 +1,7 @@
 open Aps_syntax
 open PrologTerm
 open Manip_sys
+open Interpreter
 
 
 let print_prog () =
@@ -12,8 +13,16 @@ let print_prog () =
     Format.printf "==== Test du pretty printer de termes ====\n %s " s ;
     Format.printf "==== Test du typage du programme ====\n" ;
     match cmd_typ  s with
-    | Ok(s,_) -> Format.printf "%s\n" s
+    | Ok(s,_) -> (
+      Format.printf "%s\n" s;
+        (*Sémantique*)
+      Format.printf "==== Evaluation du porgramme donne comme sortie ====\n";
+      List.iter (fun i -> Format.printf "%d \n" i) (eval_prog p)
+    )
     | Error (`Msg m) -> print_endline m 
+    
+
+    
 
 
 let _ = print_prog ()

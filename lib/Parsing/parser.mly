@@ -44,7 +44,7 @@ prog:
 
 cmds:
   st=stat                  { ASTStat(st) }
-| ds=separated_list(SEMCOL, def) SEMCOL cs=cmds { ASTCmds({defs=ds; last=cs}) }
+| ds=separated_list(SEMCOL, def) STAR cs=cmds { ASTCmds({defs=ds; last=cs}) }
 
 ;
 def:
