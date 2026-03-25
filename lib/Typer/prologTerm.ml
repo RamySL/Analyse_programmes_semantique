@@ -60,6 +60,8 @@ and pp_cmd fmt cmd =
 and pp_cmds fmt cmds =
   match cmds with
     [] -> ()
+    |[c] ->  
+        pp_cmd fmt c
     | c :: cmds ->
         fprintf fmt "defs(%a, %a)" pp_cmd c pp_cmds cmds 
 

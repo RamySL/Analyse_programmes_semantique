@@ -1,5 +1,5 @@
 [
-CONST x int 45 *
+CONST x int 45;
 ECHO x
 ]
 

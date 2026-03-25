@@ -1,5 +1,0 @@
-[
-CONST x INT 55 *
-ECHO (add 55 45)
-]
-

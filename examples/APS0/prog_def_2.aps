@@ -1,0 +1,6 @@
+[
+CONST x int 55;
+CONST y int 55;
+ECHO (add 55 45)
+]
+
