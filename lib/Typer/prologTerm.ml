@@ -52,16 +52,16 @@ let rec pp_stat fmt s =
   match s with
     ASTEcho e -> fprintf fmt "echo(%a)" pp_expr e
 
-(*!TODO: Complexité !!! ( Change le AST)*)
-and pp_cmds fmt c =
-  match c with
+and pp_cmd fmt cmd = 
+  match cmd with
     ASTStat s -> fprintf fmt "end(%a)" pp_stat s
-    |ASTCmds {defs=[]; last} -> 
-      (*Note: précondition que last est un ASTStat et donc on tombe 
-      dans le premier match*)
-      fprintf fmt "end(%a)" pp_cmds last
-    |ASTCmds {defs=d::ds; last} -> 
-      fprintf fmt "defs(%a, %a)" pp_def d pp_cmds (ASTCmds ({defs=ds; last}))
+    |ASTDef d -> pp_def fmt d
+
+and pp_cmds fmt cmds =
+  match cmds with
+    [] -> ()
+    | c :: cmds ->
+        fprintf fmt "defs(%a, %a)" pp_cmd c pp_cmds cmds 
 
 (* TODO: vérifie que c'est pas mauvais d'avoir en id String et pas ASTid*)
 and pp_def fmt def = 

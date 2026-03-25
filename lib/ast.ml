@@ -35,12 +35,13 @@ type def =
   |ASTFun of string * _type * arg list * expr
   |ASTFunREC of string * _type * arg list * expr
 
+(* type interne *)
 type cmd =
-  ASTStat of stat
-  (* On peut avoir des imbrications de structures dans cmd !! l'absence est assuré par le parser*)
-  (* En anticipation des prochaines versions de APS je met une structure
-  même si j'aurais pu mettre une liste directement*)
-  | ASTCmds of {defs: def list; last: cmd}
+    ASTStat of stat
+  | ASTDef of def
+
+type cmds = cmd list
+
 
 type prog = 
-  ASTProg of cmd
+  ASTProg of cmds

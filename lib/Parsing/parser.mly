@@ -41,12 +41,13 @@ open Ast
 prog: 
   LBRA cs=cmds RBRA        { ASTProg cs }
 ;
-
+(*TODO: revient à la syntaxe de base en enlevant le STAR*)
 cmds:
-  st=stat                  { ASTStat(st) }
-| ds=separated_list(SEMCOL, def) STAR cs=cmds { ASTCmds({defs=ds; last=cs}) }
-
+  s=stat                   { [ASTStat(s)] }
+| d=def SEMCOL cs=cmds      { ASTDef(d) :: cs  }
+| s=stat SEMCOL cs=cmds     { ASTStat(s) :: cs  }
 ;
+
 def:
   CONST id=IDENT ty=_type e=expr { ASTConst(id, ty, e) } 
 | FUN id=IDENT ty=_type LBRA args=separated_list(COMMA, arg) RBRA e=expr { ASTFun(id, ty, args, e) }

@@ -11,7 +11,7 @@ module StringMap = Map.Make(String)
 (*TODO: prq avoir pi1 séparé de pi2*)
 let pi1 = StringMap.of_list [("not", fun n -> if n = 1 then 0 else 1);]
 let pi2 = StringMap.of_list [("eq", fun n1 n2 -> if n1 = n2 then 1 else 0);
-                              ("lt",  fun n1 n2 -> if n1 < 1 then 1 else 0);
+                              ("lt",  fun n1 n2 -> if n1 < n2 then 1 else 0);
                               ("add", fun n1 n2 -> n1 + n2);
                               ("sub", fun n1 n2 -> n1 - n2);
                               ("mul", fun n1 n2 -> n1 * n2);
@@ -20,7 +20,7 @@ let pi2 = StringMap.of_list [("eq", fun n1 n2 -> if n1 = n2 then 1 else 0);
 let init_env = [("true", InZ 1); ("false", InZ 0)]
 
 let rec eval_prog: prog -> output = function
-    ASTProg cs -> eval_cmd init_env [] cs
+    ASTProg cs -> eval_cmds init_env [] cs
 
 and eval_stat (env: environement) (out: output): stat -> output = function
     ASTEcho e -> 
@@ -28,14 +28,21 @@ and eval_stat (env: environement) (out: output): stat -> output = function
       let InZ i = eval_expr env e in
       i::out
 
-and eval_cmd (env: environement) (out: output): cmd -> output = function
-      ASTStat s ->
-      eval_stat env out s
-    |ASTCmds {defs=[]; last} -> 
-      eval_cmd env out last
-    |ASTCmds {defs=d::ds; last} -> 
+
+and eval_cmds (env: environement) (out: output): cmds -> output = function
+
+    | [] -> out
+
+    | ASTStat(s) :: cmds -> 
+      let out' = eval_stat env out s in
+      eval_cmds env out' cmds
+    
+    | ASTDef(d) :: cmds -> 
       let env' = eval_def env d in
-      eval_cmd env' out (ASTCmds {defs=ds; last})
+      eval_cmds env' out cmds
+
+
+
 
 (*TODO: factorise ce code*)
 and eval_def (env: environement): def -> environement = function

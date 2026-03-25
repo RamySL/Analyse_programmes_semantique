@@ -30,8 +30,13 @@ rule token = parse
   | "bool"           { BOOL }
   | "int"            { INT }
   | "if"             { IF }
-  | "AND"            { AND }
+  | "and"            { AND }
   | "or"             { OR }
   | ['0'-'9']+('.'['0'-'9'])? as lxm { NUM(int_of_string lxm) }
   | ['a'-'z']['a'-'z''A'-'Z''0'-'9']* as lxm { IDENT(lxm) }
-  | eof              { raise Eof }
+  | _ as c {
+    let p = Lexing.lexeme_start_p lexbuf in
+    failwith (Printf.sprintf
+      "Unexpected char '%c' at line %d, col %d"
+      c p.pos_lnum (p.pos_cnum - p.pos_bol + 1))
+  }
