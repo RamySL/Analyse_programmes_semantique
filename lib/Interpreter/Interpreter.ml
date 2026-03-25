@@ -25,8 +25,9 @@ let rec eval_prog: prog -> output = function
 and eval_stat (env: environement) (out: output): stat -> output = function
     ASTEcho e -> 
       (* Pattern is exaustif, typer post cond*)
-      let InZ i = eval_expr env e in
-      i::out
+      (match eval_expr env e with
+        | InZ i -> i :: out
+        | _ -> failwith "impossible: expected InZ")
 
 
 and eval_cmds (env: environement) (out: output): cmds -> output = function
@@ -70,30 +71,39 @@ and eval_expr (env: environement): expr -> value = function
         v
     | ASTIf (e1, e2, e3) ->
       (*TODO: clarification sur les litérales 'true' et 'false' dans expr*)
-        let InZ iCond = eval_expr env e1 in
-        let v = 
-          if iCond = 1 then eval_expr env e2
-          else eval_expr env e3
-        in
-        v
+      (
+        match eval_expr env e1 with
+        | InZ iCond ->
+            if iCond = 1 then eval_expr env e2
+            else eval_expr env e3
+        | _ -> failwith "impossible: expected InZ for condition"
+      )
     | ASTAnd (e1, e2) ->
-        let InZ i1 = eval_expr env e1 in
-        let v = 
-          if i1 = 1 then 
-            let InZ i2 = eval_expr env e2 in InZ i2
-          else
-            InZ i1
-        in
-        v
+      (
+        match eval_expr env e1 with
+          | InZ i1 ->
+              if i1 = 1 then
+                (match eval_expr env e2 with
+                | InZ i2 -> InZ i2
+                | _ -> failwith "impossible: expected InZ for e2")
+              else
+                InZ i1
+          | _ ->
+              failwith "impossible: expected InZ for e1"
+      )
     | ASTOr (e1, e2) ->
-        let InZ i1 = eval_expr env e1 in
-        let v = 
-          if i1 = 1 then
-            InZ i1 
-          else
-            let InZ i2 = eval_expr env e2 in InZ i2
-        in
-        v
+      (
+        match eval_expr env e1 with
+          | InZ i1 ->
+              if i1 = 1 then
+                InZ i1
+              else
+                (match eval_expr env e2 with
+                | InZ i2 -> InZ i2
+                | _ -> failwith "impossible: expected InZ for e2")
+          | _ ->
+              failwith "impossible: expected InZ for e1"
+      )
     | ASTApp (e, es) ->
       (
       let vs = List.map(fun arg -> eval_expr env arg) es in
@@ -104,17 +114,28 @@ and eval_expr (env: environement): expr -> value = function
             (* TODO: peut être pas la meilleur manière de gérer ça*)
             *) 
           let nb_args = List.length es in
+          (
+            if nb_args = 1 then
 
-          if nb_args = 1 then
-            let InZ n = (List.hd vs) in
-            InZ ((StringMap.find fct_id pi1) n)
+              (
+                match List.hd vs with
+                  | InZ n ->
+                      InZ ((StringMap.find fct_id pi1) n)
+                  | _ ->
+                      failwith "impossible: expected InZ for first argument"
+              )
 
-          else if (nb_args = 2) then 
-            let InZ n1, InZ n2 = (List.hd vs), (List.nth vs 1)  in
-            InZ((StringMap.find fct_id pi2) n1 n2)
+            else if nb_args = 2 then
 
-          else
-            failwith "Sématique: fonctions primitives inexistantes avec ce nombre d'arguments"
+              (match List.hd vs, List.nth vs 1 with
+                | InZ n1, InZ n2 ->
+                    InZ ((StringMap.find fct_id pi2) n1 n2)
+                | _ ->
+                    failwith "impossible: expected InZ, InZ for first two arguments"
+              )
+            else
+              failwith "impossible: unsupported arity"
+          )
 
         |_ ->(
           (*Fonctions utilisateurs*)
