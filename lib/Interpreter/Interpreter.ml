@@ -110,10 +110,11 @@ and eval_expr (env: environement): expr -> value = function
       (*TODO: e n'est pas eval rec, pb ?*)
       match e with
         ASTId fct_id ->
-            (* Fonction primitives 
-            (* TODO: peut être pas la meilleur manière de gérer ça*)
-            *) 
-          let nb_args = List.length es in
+          if (StringMap.mem fct_id pi1 || StringMap.mem fct_id pi2 ) then (
+          (* Fonction primitives 
+          (* TODO: peut être pas la meilleur manière de gérer ça*)
+          *) 
+            let nb_args = List.length es in
           (
             if nb_args = 1 then
 
@@ -137,9 +138,9 @@ and eval_expr (env: environement): expr -> value = function
               failwith "impossible: unsupported arity"
           )
 
-        |_ ->(
+          )else(
           (*Fonctions utilisateurs*)
-          let v_closure = eval_expr env e in
+                    let v_closure = eval_expr env e in
           let e_body, eval_body_env = 
             match v_closure with 
               InF (e_body, params, env') ->
@@ -157,8 +158,11 @@ and eval_expr (env: environement): expr -> value = function
               |_ -> failwith "impossible: Expected InF or InFR"
           in
           eval_expr eval_body_env e_body
-        )
+          )
+
+      |_ -> failwith "TODO: à enlever quand tu geres correctement"
       )
 
     | ASTLambda (args, e_body) ->
         InF(e_body, List.map (function ASTArg (ident, _) -> ident) args, env)    
+
