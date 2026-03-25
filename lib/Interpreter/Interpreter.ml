@@ -153,6 +153,8 @@ and eval_expr (env: environement): expr -> value = function
                 e_body,
                 let env_partiel = List.fold_left2 (fun env_acc p v -> (p,v)::env_acc) (env') (params) (vs) in
                   (f_name, InFR (e_body, f_name, params, env')) :: env_partiel
+              
+              |_ -> failwith "impossible: Expected InF or InFR"
           in
           eval_expr eval_body_env e_body
         )
