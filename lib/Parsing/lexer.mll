@@ -12,7 +12,8 @@
 
 }
 rule token = parse
-    [' ' '\t' '\n']       { token lexbuf }     (* skip blanks *)
+  [' ' '\t' '\n']       { token lexbuf }     (* skip blanks *)
+  (* Symboles *)
   | '['              { LBRA }
   | ']'              { RBRA }
   | '('              { LPAR }
@@ -22,6 +23,7 @@ rule token = parse
   | ','              { COMMA }
   | '*'              { STAR }
   | "->"             { ARROW }
+  (* Mots clés *)
   | "ECHO"           { ECHO }
   | "CONST"          { CONST }
   | "FUN"            { FUN }  
@@ -32,6 +34,15 @@ rule token = parse
   | "if"             { IF }
   | "and"            { AND }
   | "or"             { OR }
+  (* APS1 *)
+  | "VAR"            { VAR }
+  | "PROC"           { PROC }
+  | "SET"            { SET }
+  | "IF"             { IF_STAT }
+  | "WHILE"          { WHILE }
+  | "CALL"           { CALL }
+  | "void"           { VOID }
+
   | ['0'-'9']+('.'['0'-'9'])? as lxm { NUM(int_of_string lxm) }
   | ['a'-'z']['a'-'z''A'-'Z''0'-'9']* as lxm { IDENT(lxm) }
   | _ as c {
