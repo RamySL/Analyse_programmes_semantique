@@ -62,18 +62,18 @@ type_prog(prog(P), void) :-
 
 /** Defintions **/
 
-type_def(G, const(id(X), T, E), [(X, T) | G]) :- type_expr(G, E, T).
+type_def(G, const(X, T, E), [(X, T) | G]) :- type_expr(G, E, T).
 /* 
 Dans l'environnement de type de défintion d'une fonction 
 est définit par un tupe (liste de type de params, type de retour)
 */
                                                         /* ' * * * -> tret ' */
-type_def(G, fun(id(F), T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G]) :- 
+type_def(G, fun(F, T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G]) :- 
     get_types(ID_T_PARAMS, T_PARAMS),
     add_list_context(G, ID_T_PARAMS, G_EVAL),
     type_expr(G_EVAL, BODY, T_RET).
 
-type_def(G, fun_rec(id(F), T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G]) :- 
+type_def(G, fun_rec(F, T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G]) :- 
     get_types(ID_T_PARAMS, T_PARAMS),
     add_list_context(G, ID_T_PARAMS, G_EVAL),
     /** La différence avec l'ancienne c'est dans l'env d'eval on a mis la fonction elle même **/

@@ -25,7 +25,7 @@ and pp_types fmt ts = pp_lst_cma pp_type fmt ts
 
 let rec pp_arg fmt arg = 
   match arg with 
-    ASTArg(id, ty) -> fprintf fmt "%s:%a" id pp_type ty 
+    ASTArg(id, ty) -> fprintf fmt "(%s,%a)" id pp_type ty 
 
 and pp_args fmt args = pp_lst_cma pp_arg fmt args
 
@@ -64,6 +64,8 @@ and pp_cmds fmt cmds =
         pp_cmd fmt c
     | c :: cmds ->
         fprintf fmt "defs(%a, %a)" pp_cmd c pp_cmds cmds 
+
+and pp_cmds' fmt cmds = pp_lst_cma pp_cmd fmt cmds
 
 (* TODO: vérifie que c'est pas mauvais d'avoir en id String et pas ASTid*)
 and pp_def fmt def = 
