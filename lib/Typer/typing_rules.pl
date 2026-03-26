@@ -79,6 +79,18 @@ type_def(G, fun_rec(F, T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G]) 
     /** La différence avec l'ancienne c'est dans l'env d'eval on a mis la fonction elle même **/
     type_expr([(F, (T_PARAMS, T_RET)) | G_EVAL], BODY, T_RET).
 
+type_def(G, var(ID, T), [(ID, T) | G]).
+
+type_def(G, proc(P, ID_T_PARAMS, BODY), [(P, (T_PARAMS, void)) | G]) :- 
+    get_types(ID_T_PARAMS, T_PARAMS),
+    add_list_context(G, ID_T_PARAMS, G_EVAL),
+    type_block(G_EVAL, BODY, void).
+
+type_def(G, proc_rec(P, ID_T_PARAMS, BODY), [(P, (T_PARAMS, void)) | G]) :- 
+    get_types(ID_T_PARAMS, T_PARAMS),
+    add_list_context(G, ID_T_PARAMS, G_EVAL),
+    type_block([(P, (T_PARAMS, void)) | G_EVAL], BODY, void).
+
 
 /* Commands */
 type_cmds(G, defs(D, CS), void) :- 
@@ -113,5 +125,8 @@ type_expr(G, abs(ID_T_PARAMS, BODY), (T_PARAMS, T_RET)) :-
     add_list_context(G, ID_T_PARAMS, NEW_G),
     type_expr(NEW_G, BODY, T_RET),
     get_types(ID_T_PARAMS, T_PARAMS).
+
+/* APS1 */
+type_block(G, block(CS), void) :- type_cmds(G, CS, void).
 
 

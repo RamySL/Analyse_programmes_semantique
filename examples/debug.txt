@@ -1,0 +1,1 @@
+type_check(prog(defs(proc(p,[(x,int)],block(end(echo(id(x))))), end(echo(num(3)))))).

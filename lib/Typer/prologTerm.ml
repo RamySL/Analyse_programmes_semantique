@@ -76,8 +76,16 @@ and pp_def fmt def =
         fprintf fmt "fun(%s,%a,[%a],%a)" id pp_type ty pp_args args pp_expr e
     | ASTFunREC(id, ty, args, e)->
         fprintf fmt "fun_rec(%s,%a,[%a],%a)" id pp_type ty pp_args args pp_expr e
-
+    | ASTVar (id, ty) -> 
+        fprintf fmt "var(%s,%a)" id pp_type ty
+    |ASTProc(p, args, bk) ->
+        fprintf fmt "proc(%s,[%a],%a)" p pp_args args pp_block bk
+    |ASTProcREC(p, args, bk) ->
+        fprintf fmt "proc_rec(%s,[%a],%a)" p pp_args args pp_block bk
 and pp_defs fmt defs = pp_lst_cma pp_def fmt defs
+
+and pp_block fmt (blck: cmd list) = 
+    fprintf fmt "block(%a)" pp_cmds blck
 
 let pp_prog fmt = function
   ASTProg p -> fprintf fmt "prog(%a).\n" pp_cmds p
