@@ -50,22 +50,24 @@ and pp_exprs fmt es = pp_lst_cma pp_expr fmt es
 
 let rec pp_stat fmt s =
   match s with
-    ASTEcho e -> fprintf fmt "echo(%a)" pp_expr e
-
+      ASTEcho e -> fprintf fmt "echo(%a)" pp_expr e
+    | ASTSet(id, e) -> fprintf fmt "set(%s, %a)" id pp_expr e
+(*
 and pp_cmd fmt cmd = 
   match cmd with
     ASTStat s -> fprintf fmt "end(%a)" pp_stat s
     |ASTDef d -> pp_def fmt d
-
+*)
 and pp_cmds fmt cmds =
   match cmds with
-    [] -> ()
-    |[c] ->  
-        pp_cmd fmt c
-    | c :: cmds ->
-        fprintf fmt "defs(%a, %a)" pp_cmd c pp_cmds cmds 
+    | [] -> 
+        fprintf fmt "end"
+    | ASTDef d :: cmds ->
+        fprintf fmt "defs(%a, %a)" pp_def d pp_cmds cmds 
+    | ASTStat s :: cmds ->
+        fprintf fmt "stats(%a, %a)" pp_stat s pp_cmds cmds 
 
-and pp_cmds' fmt cmds = pp_lst_cma pp_cmd fmt cmds
+(*and pp_cmds' fmt cmds = pp_lst_cma pp_cmd fmt cmds*)
 
 (* TODO: vérifie que c'est pas mauvais d'avoir en id String et pas ASTid*)
 and pp_def fmt def = 
@@ -88,7 +90,7 @@ and pp_block fmt (blck: cmd list) =
     fprintf fmt "block(%a)" pp_cmds blck
 
 let pp_prog fmt = function
-  ASTProg p -> fprintf fmt "prog(%a).\n" pp_cmds p
+  ASTProg p -> fprintf fmt "prog(%a).\n" pp_block p
 
 
 

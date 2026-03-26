@@ -58,7 +58,7 @@ match_exprs_types(G, [E | ES], [T | TS]) :-
 
 type_prog(prog(P), void) :- 
     context_init(G0),
-    type_cmds(G0, P, void).
+    type_block(G0, P, void).
 
 /** Defintions **/
 
@@ -97,12 +97,18 @@ type_cmds(G, defs(D, CS), void) :-
     type_def(G, D, NEW_G),
     type_cmds(NEW_G, CS, void).
 
-type_cmds(G, end(S), void) :- 
-    type_stat(G, S, void).
+type_cmds(G, stats(S, CS), void) :- 
+    type_stat(G, S, void),
+    type_cmds(G, CS, void).
+
+type_cmds(G, end, void).
 
 
 /* Statements */
 type_stat(G, echo(E), void) :- type_expr(G,E,int).
+type_stat(G, set(ID, E) ,void) :- 
+    find(G, ID, T),
+    type_expr(G, E, T).
 
 
 /* Expressions */
