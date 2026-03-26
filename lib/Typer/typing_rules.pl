@@ -101,7 +101,7 @@ type_cmds(G, stats(S, CS), void) :-
     type_stat(G, S, void),
     type_cmds(G, CS, void).
 
-type_cmds(G, end, void).
+type_cmds(_, end, void).
 
 
 /* Statements */
@@ -110,13 +110,22 @@ type_stat(G, set(ID, E) ,void) :-
     find(G, ID, T),
     type_expr(G, E, T).
 
+type_stat(G, if_stat(E, BK1, BK2), void) :-
+    type_expr(G, E, bool), 
+    type_block(G, BK1, void), 
+    type_block(G, BK2, void).
+
+type_stat(G, while(E, BK), void) :-
+    type_expr(G, E, bool), 
+    type_block(G, BK, void).
+
+type_stat(G, call(ID, ARGS), void) :- 
+    type_expr(G, ID, (T_PARAMS, void)),
+    match_exprs_types(G, ARGS, T_PARAMS).   
+
 
 /* Expressions */
 type_expr(_, num(_), int).
-/* TODO: On y'accedra jamais à ces deux, pcq on va passer par id(true)
-type_expr(_, true, bool).
-type_expr(_, false, bool).
-*/
 type_expr(G, if(E1,E2,E3), T) :- type_expr(G, E1, bool), type_expr(G, E2, T), type_expr(G, E3, T).
 type_expr(G, and(E1,E2), bool) :- type_expr(G, E1, bool), type_expr(G, E2, bool).
 type_expr(G, or(E1,E2), bool) :- type_expr(G, E1, bool), type_expr(G, E2, bool).
@@ -124,6 +133,7 @@ type_expr(G, id(X), T) :- find(G, X, T).
 type_expr(G, app(FCT, ARGS), T_RET) :-
     type_expr(G, FCT, (T_PARAMS, T_RET)),
     match_exprs_types(G, ARGS, T_PARAMS).
+/*TODO: repition pour app  ?*/
 type_expr(G, app(FCT, ARGS), T_RET) :-
     type_expr(G, FCT, (T_PARAMS, T_RET)),
     match_exprs_types(G, ARGS, T_PARAMS).

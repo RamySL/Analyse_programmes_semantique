@@ -32,7 +32,7 @@ and stat =
     | ASTSet of string * expr
     | ASTIfStat of expr * block * block
     | ASTWhile of expr * block
-    | ASTCall of string * expr
+    | ASTCall of expr * expr list
 
 and def = 
     ASTConst of string * _type * expr

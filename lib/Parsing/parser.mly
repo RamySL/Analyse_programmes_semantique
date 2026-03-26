@@ -79,7 +79,7 @@ stat:
   | SET id=IDENT e=expr        { ASTSet(id, e)}
   | IF_STAT e=expr b1=block b2=block  { ASTIfStat(e, b1, b2) }
   | WHILE e=expr b=block      { ASTWhile(e, b)}
-  | CALL id=IDENT e=expr     { ASTCall(id, e) }
+  | CALL e=expr es=list(expr)     { ASTCall(e, es) }
 ;
 
 expr:

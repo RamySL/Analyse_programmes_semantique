@@ -1,1 +1,5 @@
-type_check(prog(defs(proc(p,[(x,int)],block(end(echo(id(x))))), end(echo(num(3)))))).
+type_check(prog(block(defs(proc(p,[(x,int), (y,int)],block(stats(echo(app(id(add),[id(x), id(y)])), end))), stats(call(p,num(2), num(1)), stats(echo(num(0)), end)))))).
+type_check(prog(block(defs(fun(f,int,[(x,int), (y,int)],app(id(add),[id(x), id(y)])), stats(echo(app(id(f),[num(10), num(15)])), end))))).
+
+   Call: (15) type_expr([(x, int), (y, int), (true, bool), (false, bool), (not, [bool], bool), (eq, [...|...], bool), (lt, ..., ...), (..., ...)|...], app(id(add), [id(x), id(y)]), int) ?
+   Fail: (15) type_stat([(p, [int, int], void), (true, bool), (false, bool), (not, [bool], bool), (eq, [int|...], bool), (lt, [...|...], bool), (add, ..., ...), (..., ...)|...], call(p, num(2), num(1)), void) ? creep
