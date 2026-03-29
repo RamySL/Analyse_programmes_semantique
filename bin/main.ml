@@ -13,16 +13,21 @@ let print_prog () =
     let s = Format.flush_str_formatter () in
     Format.printf "==== Test du pretty printer de termes ====\n %s " s ;
     Format.printf "==== Test du typage du programme ====\n" ;
-    match cmd_typ s with
-    | Ok(s,_) -> (
-      Format.printf "%s\n" s;
-        (*Sémantique*)
-      Format.printf "==== Evaluation du porgramme donne comme sortie ====\n";
-      List.iter (fun i -> Format.printf "%d \n" i) (eval_prog p)
-    )
-    | Error (`Msg m) -> print_endline m 
     
-
+    match cmd_typ s with
+    | Ok (res, _) ->
+        let res = String.trim res in
+        Format.printf "%s\n" res;
+        if res = "OK" then begin
+          Format.printf "==== Evaluation du programme donne comme sortie ====\n";
+          List.iter (fun i -> Format.printf "%d\n" i) (eval_prog p)
+        end else begin
+          prerr_endline "Erreur de type";
+          exit 1
+        end
+    | Error (`Msg m) ->
+        prerr_endline m;
+        exit 1
     
 
 
