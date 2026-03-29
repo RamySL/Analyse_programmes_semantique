@@ -1,5 +1,5 @@
 [
-FUN f int * int -> int []
+FUN f (int * int -> int) []
 (
  add
 );

@@ -1,6 +1,5 @@
 open Types
 open Ast
-
 module StringMap = Map.Make(String)
 
 (*TODO: prq avoir pi1 séparé de pi2*)
@@ -20,9 +19,11 @@ let rec eval_prog: prog -> output = function
 and eval_stat (env: environement) (out: output): stat -> output = function
     ASTEcho e -> 
       (* Pattern is exaustif, typer post cond*)
-      (match eval_expr env e with
-        | InZ i -> i :: out
-        | _ -> failwith "impossible: expected InZ")
+      begin
+        match eval_expr env e with
+          | InZ i -> i :: out
+          | _ -> failwith "impossible: expected InZ"
+      end
 
 
 and eval_cmds (env: environement) (out: output): cmds -> output = function
@@ -52,8 +53,19 @@ and eval_def (env: environement): def -> environement = function
       (id, InFR(e_body, id, List.map (function ASTArg(ident, _) -> ident) args, env))
       ::env
 
-and eval_expr (env: environement): expr -> value = function
-      
+
+and eval_expr (env: environement) (e:expr) : value = 
+
+    (*Retourne l'environement env etendu avec tous les binding formé par les éléments
+    de params et les valeurs de vs*)
+    let bind (env:environement) params vs : environement =
+      if List.length params <> List.length vs then
+        failwith "arity mismatch"
+      else
+        List.fold_left2 (fun acc p v -> (p, v) :: acc) env params vs
+    in
+
+    match e with 
     | ASTNum n ->
       (*Note: pour la section 'Fonctions sémantiques utiles' des notes de cours APS0.
       Ici la conversion est faite par le lexer (int_of_string)*)
@@ -62,15 +74,15 @@ and eval_expr (env: environement): expr -> value = function
         let _, v = List.find (fun (id, _) -> id = x) env in
         v
     | ASTIf (e1, e2, e3) ->
-      (
+      begin
         match eval_expr env e1 with
         | InZ iCond ->
             if iCond = 1 then eval_expr env e2
             else eval_expr env e3
         | _ -> failwith "impossible: expected InZ for condition"
-      )
+      end
     | ASTAnd (e1, e2) ->
-      (
+      begin
         match eval_expr env e1 with
           | InZ i1 ->
               if i1 = 1 then
@@ -81,9 +93,9 @@ and eval_expr (env: environement): expr -> value = function
                 InZ i1
           | _ ->
               failwith "impossible: expected InZ for e1"
-      )
+      end
     | ASTOr (e1, e2) ->
-      (
+      begin
         match eval_expr env e1 with
           | InZ i1 ->
               if i1 = 1 then
@@ -94,60 +106,34 @@ and eval_expr (env: environement): expr -> value = function
                 | _ -> failwith "impossible: expected InZ for e2")
           | _ ->
               failwith "impossible: expected InZ for e1"
-      )
+      end
+
+    | ASTApp (ASTId f, es) when StringMap.mem f pi1 || StringMap.mem f pi2 ->
+      let vs = List.map (eval_expr env) es in
+      begin match f, vs with
+        | "not", [InZ n] ->
+            InZ ((StringMap.find f pi1) n)
+        | ("eq" | "lt" | "add" | "sub" | "mul" | "div"), [InZ n1; InZ n2] ->
+            InZ ((StringMap.find f pi2) n1 n2)
+        | _ ->
+            let l = List.map (fun v -> Printf.sprintf "%s" (Helper.string_of_value v) ) vs in
+            failwith (Printf.sprintf "primitive : %s applied erroneously on : %s" f (String.concat " " l))
+      end
+
     | ASTApp (e, es) ->
-      (
-      let vs = List.map(fun arg -> eval_expr env arg) es in
-      (*TODO: e n'est pas eval rec, pb ?, PB si on a une fonction qui retourne add*)
-      match e with
-        ASTId fct_id ->
-          if (StringMap.mem fct_id pi1 || StringMap.mem fct_id pi2 ) then (
-          (* Fonction primitives *)
-            let nb_args = List.length es in
-            (
-              if nb_args = 1 then
+      let vf = eval_expr env e in
+      let vs = List.map (eval_expr env) es in
+      begin match vf with
+      | InF (e_body, params, env') ->
+          eval_expr (bind env' params vs) e_body
 
-                (
-                  match List.hd vs with
-                    | InZ n ->
-                        InZ ((StringMap.find fct_id pi1) n)
-                    | _ ->
-                        failwith "impossible: expected InZ for first argument"
-                )
-              else if nb_args = 2 then
+      | InFR (e_body, f_name, params, env') as self ->
+          eval_expr ((f_name, self) :: bind env' params vs) e_body
 
-                (
-                  match List.hd vs, List.nth vs 1 with
-                  | InZ n1, InZ n2 ->
-                      InZ ((StringMap.find fct_id pi2) n1 n2)
-                  | _ ->
-                      failwith "impossible: expected InZ, InZ for first two arguments"
-                )
-              else
-                failwith "impossible: unsupported arity"
-            )
-
-          )else(
-          (*Fonctions utilisateurs*)
-          let v_closure = eval_expr env e in
-          let e_body, eval_body_env = 
-            match v_closure with 
-              InF (e_body, params, env') ->
-                e_body, 
-                List.fold_left2 (fun env_acc p v -> (p,v)::env_acc) (env') (params) (vs)
-
-              |InFR (e_body, f_name, params, env') ->
-                e_body,
-                let env_partiel = List.fold_left2 (fun env_acc p v -> (p,v)::env_acc) (env') (params) (vs) in
-                (f_name, InFR (e_body, f_name, params, env')) :: env_partiel
-              
-              |_ -> failwith "impossible: Expected InF or InFR"
-          in
-          eval_expr eval_body_env e_body
-          )
-
-      |_ -> failwith "TODO: à enlever quand tu geres correctement"
-      )
+      | _ ->
+          failwith "app on a non fonctionnel value"
+      end
+      
 
     | ASTLambda (args, e_body) ->
         InF(e_body, List.map (function ASTArg (ident, _) -> ident) args, env)    
