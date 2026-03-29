@@ -1,0 +1,7 @@
+[
+FUN f int * int -> int []
+(
+ add
+);
+ECHO ((f) 10 15)
+]

@@ -9,10 +9,17 @@
 {
   open Parser        (* The type token is defined in parser.mli *)
   exception Eof
+  exception SyntaxError of string
 
+  let syntax_error lexbuf msg =
+    let p = Lexing.lexeme_start_p lexbuf in
+    let line = p.Lexing.pos_lnum in
+    let col = p.Lexing.pos_cnum - p.Lexing.pos_bol + 1 in
+    raise (SyntaxError (Printf.sprintf "%s at line %d, column %d" msg line col))
 }
 rule token = parse
-    [' ' '\t' '\n']       { token lexbuf }     (* skip blanks *)
+    [' ' '\t' '\r']       { token lexbuf }     (* skip blanks *)
+  | '\n'                  { Lexing.new_line lexbuf; token lexbuf }
   | '['              { LBRA }
   | ']'              { RBRA }
   | '('              { LPAR }

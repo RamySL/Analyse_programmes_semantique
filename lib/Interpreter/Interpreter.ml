@@ -1,8 +1,3 @@
-(*
-- On reçoit le programme qui a été donc typé, et du coup on a des préconditions qu'on peut prendre 
-(ou bien des postscond fournit par le typeur)
-*)
-
 open Types
 open Ast
 
@@ -43,9 +38,6 @@ and eval_cmds (env: environement) (out: output): cmds -> output = function
       eval_cmds env' out cmds
 
 
-
-
-(*TODO: factorise ce code*)
 and eval_def (env: environement): def -> environement = function
     ASTConst (id, _, e) ->
         let v = eval_expr env e in
@@ -70,7 +62,6 @@ and eval_expr (env: environement): expr -> value = function
         let _, v = List.find (fun (id, _) -> id = x) env in
         v
     | ASTIf (e1, e2, e3) ->
-      (*TODO: clarification sur les litérales 'true' et 'false' dans expr*)
       (
         match eval_expr env e1 with
         | InZ iCond ->
@@ -107,53 +98,48 @@ and eval_expr (env: environement): expr -> value = function
     | ASTApp (e, es) ->
       (
       let vs = List.map(fun arg -> eval_expr env arg) es in
-      (*TODO: e n'est pas eval rec, pb ?*)
+      (*TODO: e n'est pas eval rec, pb ?, PB si on a une fonction qui retourne add*)
       match e with
         ASTId fct_id ->
           if (StringMap.mem fct_id pi1 || StringMap.mem fct_id pi2 ) then (
-          (* Fonction primitives 
-          (* TODO: peut être pas la meilleur manière de gérer ça*)
-          *) 
+          (* Fonction primitives *)
             let nb_args = List.length es in
-          (
-            if nb_args = 1 then
+            (
+              if nb_args = 1 then
 
-              (
-                match List.hd vs with
-                  | InZ n ->
-                      InZ ((StringMap.find fct_id pi1) n)
+                (
+                  match List.hd vs with
+                    | InZ n ->
+                        InZ ((StringMap.find fct_id pi1) n)
+                    | _ ->
+                        failwith "impossible: expected InZ for first argument"
+                )
+              else if nb_args = 2 then
+
+                (
+                  match List.hd vs, List.nth vs 1 with
+                  | InZ n1, InZ n2 ->
+                      InZ ((StringMap.find fct_id pi2) n1 n2)
                   | _ ->
-                      failwith "impossible: expected InZ for first argument"
-              )
-
-            else if nb_args = 2 then
-
-              (match List.hd vs, List.nth vs 1 with
-                | InZ n1, InZ n2 ->
-                    InZ ((StringMap.find fct_id pi2) n1 n2)
-                | _ ->
-                    failwith "impossible: expected InZ, InZ for first two arguments"
-              )
-            else
-              failwith "impossible: unsupported arity"
-          )
+                      failwith "impossible: expected InZ, InZ for first two arguments"
+                )
+              else
+                failwith "impossible: unsupported arity"
+            )
 
           )else(
           (*Fonctions utilisateurs*)
-                    let v_closure = eval_expr env e in
+          let v_closure = eval_expr env e in
           let e_body, eval_body_env = 
             match v_closure with 
               InF (e_body, params, env') ->
                 e_body, 
-                (* On veut enchainer un List.map entre params et vs, pour avoir
-                (param, valeur)list, puis on veut les rajouter donc avec un List.foldl
-                avec comme accumulateur env'. ça on peut le faire avec fold_lfet2 *)
-
                 List.fold_left2 (fun env_acc p v -> (p,v)::env_acc) (env') (params) (vs)
+
               |InFR (e_body, f_name, params, env') ->
                 e_body,
                 let env_partiel = List.fold_left2 (fun env_acc p v -> (p,v)::env_acc) (env') (params) (vs) in
-                  (f_name, InFR (e_body, f_name, params, env')) :: env_partiel
+                (f_name, InFR (e_body, f_name, params, env')) :: env_partiel
               
               |_ -> failwith "impossible: Expected InF or InFR"
           in

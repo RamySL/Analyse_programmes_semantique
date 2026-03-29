@@ -13,9 +13,29 @@ let cmd_typ pl_term =
 
 let get_prog (fname : string) : Ast.prog =
   let ic = open_in fname in
+  let lexbuf = Lexing.from_channel ic in
   try
-    let lexbuf = Lexing.from_channel ic in
     let p = Parser.prog Lexer.token lexbuf in
-      p
-  with Lexer.Eof ->
-    exit 0
+    close_in ic;
+    p
+  with
+  | Lexer.SyntaxError msg ->
+      close_in_noerr ic;
+      prerr_endline msg;
+      exit 1
+
+  | Parser.Error ->
+      close_in_noerr ic;
+      let pos = Lexing.lexeme_start_p lexbuf in
+      let line = pos.Lexing.pos_lnum in
+      let col = pos.Lexing.pos_cnum - pos.Lexing.pos_bol + 1 in
+      let tok = Lexing.lexeme lexbuf in
+      Printf.eprintf
+        "%s:%d:%d: syntax error near %S\n"
+        fname line col tok;
+      exit 1
+
+  | Lexer.Eof ->
+      close_in_noerr ic;
+      Printf.eprintf "%s: unexpected end of file\n" fname;
+      exit 1
