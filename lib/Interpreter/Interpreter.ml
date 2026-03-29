@@ -20,6 +20,7 @@ and eval_stat (env: environement) (out: output): stat -> output = function
       (* Pattern is exaustif, typer post cond*)
       begin
         match eval_expr env e with
+          (*TODO: dans le future peut etre pb de liste inversé*)
           | InZ i -> i :: out
           | _ -> failwith "impossible: expected InZ"
       end

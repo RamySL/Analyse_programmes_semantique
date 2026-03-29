@@ -2,6 +2,6 @@
 CONST x int 44;
 CONST y int 30;
 CONST z int 10;
-ECHO (add 55 45)
+ECHO (add x z)
 ]
 
