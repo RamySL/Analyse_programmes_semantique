@@ -26,7 +26,7 @@ and eval_stat (env: environement) (out: output): stat -> output = function
       end
 
 
-and eval_cmds (env: environement) (out: output): cmds -> output = function
+and eval_cmds (env: environement) (out: output): cmd list -> output = function
 
     | [] -> out
 

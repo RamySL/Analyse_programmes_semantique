@@ -50,22 +50,27 @@ and pp_exprs fmt es = pp_lst_cma pp_expr fmt es
 
 let rec pp_stat fmt s =
   match s with
-    ASTEcho e -> fprintf fmt "echo(%a)" pp_expr e
-
+      ASTEcho e -> fprintf fmt "echo(%a)" pp_expr e
+    | ASTSet(id, e) -> fprintf fmt "set(%s, %a)" id pp_expr e
+    | ASTIfStat(e, bk1, bk2) -> fprintf fmt "if_stat(%a,%a,%a)" pp_expr e pp_block bk1 pp_block bk2
+    | ASTWhile(e, bk) -> fprintf fmt "while(%a,%a)" pp_expr e pp_block bk
+    | ASTCall(e, es) -> fprintf fmt "call(%a,[%a])" pp_expr e pp_exprs es
+        (*
 and pp_cmd fmt cmd = 
   match cmd with
     ASTStat s -> fprintf fmt "end(%a)" pp_stat s
     |ASTDef d -> pp_def fmt d
-
+*)
 and pp_cmds fmt cmds =
   match cmds with
-    [] -> ()
-    |[c] ->  
-        pp_cmd fmt c
-    | c :: cmds ->
-        fprintf fmt "defs(%a, %a)" pp_cmd c pp_cmds cmds 
+    | [] -> 
+        fprintf fmt "end"
+    | ASTDef d :: cmds ->
+        fprintf fmt "defs(%a, %a)" pp_def d pp_cmds cmds 
+    | ASTStat s :: cmds ->
+        fprintf fmt "stats(%a, %a)" pp_stat s pp_cmds cmds 
 
-and pp_cmds' fmt cmds = pp_lst_cma pp_cmd fmt cmds
+(*and pp_cmds' fmt cmds = pp_lst_cma pp_cmd fmt cmds*)
 
 (* TODO: vérifie que c'est pas mauvais d'avoir en id String et pas ASTid*)
 and pp_def fmt def = 
@@ -76,11 +81,19 @@ and pp_def fmt def =
         fprintf fmt "fun(%s,%a,[%a],%a)" id pp_type ty pp_args args pp_expr e
     | ASTFunREC(id, ty, args, e)->
         fprintf fmt "fun_rec(%s,%a,[%a],%a)" id pp_type ty pp_args args pp_expr e
-
+    | ASTVar (id, ty) -> 
+        fprintf fmt "var(%s,%a)" id pp_type ty
+    |ASTProc(p, args, bk) ->
+        fprintf fmt "proc(%s,[%a],%a)" p pp_args args pp_block bk
+    |ASTProcREC(p, args, bk) ->
+        fprintf fmt "proc_rec(%s,[%a],%a)" p pp_args args pp_block bk
 and pp_defs fmt defs = pp_lst_cma pp_def fmt defs
 
+and pp_block fmt (blck: cmd list) = 
+    fprintf fmt "block(%a)" pp_cmds blck
+
 let pp_prog fmt = function
-  ASTProg p -> fprintf fmt "prog(%a).\n" pp_cmds p
+  ASTProg p -> fprintf fmt "prog(%a).\n" pp_block p
 
 
 

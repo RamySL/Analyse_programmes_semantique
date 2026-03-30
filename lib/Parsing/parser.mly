@@ -26,6 +26,8 @@ open Ast
 %token LBRA RBRA
 %token SEMCOL COL COMMA STAR ARROW
 %token ECHO CONST FUN REC IF AND OR
+(* APS1 *)
+%token VAR PROC SET IF_STAT WHILE CALL VOID
 %token BOOL INT
 
 %type <Ast.prog> prog
@@ -39,11 +41,14 @@ open Ast
 *)
 
 prog: 
-  LBRA cs=cmds RBRA        { ASTProg cs }
+  b=block        { ASTProg b }
 ;
-(*TODO: revient à la syntaxe de base en enlevant le STAR*)
+
+block:
+  LBRA cs=cmds RBRA        { cs }
+
 cmds:
-  s=stat                   { [ASTStat(s)] }
+  s=stat                    { [ASTStat s] }
 | d=def SEMCOL cs=cmds      { ASTDef(d) :: cs  }
 | s=stat SEMCOL cs=cmds     { ASTStat(s) :: cs  }
 ;
@@ -52,11 +57,15 @@ def:
   CONST id=IDENT ty=_type e=expr { ASTConst(id, ty, e) } 
 | FUN id=IDENT ty=_type LBRA args=separated_list(COMMA, arg) RBRA e=expr { ASTFun(id, ty, args, e) }
 | FUN REC id=IDENT ty=_type LBRA args=separated_list(COMMA, arg) RBRA e=expr { ASTFunREC(id, ty, args, e) }
+| VAR id=IDENT ty=_type { ASTVar(id, ty) }
+| PROC id=IDENT LBRA args=separated_list(COMMA, arg) RBRA blck=block { ASTProc(id, args, blck) }
+| PROC REC id=IDENT LBRA args=separated_list(COMMA, arg) RBRA blck=block { ASTProcREC(id, args, blck) }
 ;
 
 _type:
   BOOL                          { ASTBool }
 | INT                           { ASTInt }
+| VOID                          { ASTVoid }
 | LPAR ts=separated_list(STAR, _type) ARROW rt=_type RPAR { ASTFunT(ts, rt) }
 ;
 
@@ -67,6 +76,10 @@ arg:
 
 stat:
   ECHO e=expr                  { ASTEcho(e) }
+  | SET id=IDENT e=expr        { ASTSet(id, e)}
+  | IF_STAT e=expr b1=block b2=block  { ASTIfStat(e, b1, b2) }
+  | WHILE e=expr b=block      { ASTWhile(e, b)}
+  | CALL e=expr es=list(expr)     { ASTCall(e, es) }
 ;
 
 expr:

@@ -13,11 +13,12 @@ type _type =
    ASTBool
   | ASTInt
   | ASTFunT of _type list * _type
+  | ASTVoid
 
-type arg = 
+and arg = 
   ASTArg of string * _type
 
-type expr =
+and expr =
     ASTNum of int
   | ASTId of string
   | ASTIf of expr * expr * expr
@@ -26,22 +27,28 @@ type expr =
   | ASTApp of expr * expr list
   | ASTLambda of arg list * expr
 
-type stat =
-    ASTEcho of expr
+and stat =
+      ASTEcho of expr
+    | ASTSet of string * expr
+    | ASTIfStat of expr * block * block
+    | ASTWhile of expr * block
+    | ASTCall of expr * expr list
 
+and def = 
+    ASTConst of string * _type * expr
+  | ASTFun of string * _type * arg list * expr
+  | ASTFunREC of string * _type * arg list * expr
+  | ASTVar of string * _type
+  | ASTProc of string * arg list * block
+  | ASTProcREC of string * arg list * block
 
-type def = 
-  ASTConst of string * _type * expr
-  |ASTFun of string * _type * arg list * expr
-  |ASTFunREC of string * _type * arg list * expr
 
 (* type interne *)
-type cmd =
+and cmd =
     ASTStat of stat
   | ASTDef of def
 
-type cmds = cmd list
+and block = cmd list
 
-
-type prog = 
-  ASTProg of cmds
+and prog = 
+  ASTProg of block

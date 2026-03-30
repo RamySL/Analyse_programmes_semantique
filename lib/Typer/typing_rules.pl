@@ -58,7 +58,7 @@ match_exprs_types(G, [E | ES], [T | TS]) :-
 
 type_prog(prog(P), void) :- 
     context_init(G0),
-    type_cmds(G0, P, void).
+    type_block(G0, P, void).
 
 /** Defintions **/
 
@@ -79,26 +79,53 @@ type_def(G, fun_rec(F, T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G]) 
     /** La différence avec l'ancienne c'est dans l'env d'eval on a mis la fonction elle même **/
     type_expr([(F, (T_PARAMS, T_RET)) | G_EVAL], BODY, T_RET).
 
+type_def(G, var(ID, T), [(ID, T) | G]).
+
+type_def(G, proc(P, ID_T_PARAMS, BODY), [(P, (T_PARAMS, void)) | G]) :- 
+    get_types(ID_T_PARAMS, T_PARAMS),
+    add_list_context(G, ID_T_PARAMS, G_EVAL),
+    type_block(G_EVAL, BODY, void).
+
+type_def(G, proc_rec(P, ID_T_PARAMS, BODY), [(P, (T_PARAMS, void)) | G]) :- 
+    get_types(ID_T_PARAMS, T_PARAMS),
+    add_list_context(G, ID_T_PARAMS, G_EVAL),
+    type_block([(P, (T_PARAMS, void)) | G_EVAL], BODY, void).
+
 
 /* Commands */
 type_cmds(G, defs(D, CS), void) :- 
     type_def(G, D, NEW_G),
     type_cmds(NEW_G, CS, void).
 
-type_cmds(G, end(S), void) :- 
-    type_stat(G, S, void).
+type_cmds(G, stats(S, CS), void) :- 
+    type_stat(G, S, void),
+    type_cmds(G, CS, void).
+
+type_cmds(_, end, void).
 
 
 /* Statements */
 type_stat(G, echo(E), void) :- type_expr(G,E,int).
+type_stat(G, set(ID, E) ,void) :- 
+    find(G, ID, T),
+    type_expr(G, E, T).
+
+type_stat(G, if_stat(E, BK1, BK2), void) :-
+    type_expr(G, E, bool), 
+    type_block(G, BK1, void), 
+    type_block(G, BK2, void).
+
+type_stat(G, while(E, BK), void) :-
+    type_expr(G, E, bool), 
+    type_block(G, BK, void).
+
+type_stat(G, call(ID, ARGS), void) :- 
+    type_expr(G, ID, (T_PARAMS, void)),
+    match_exprs_types(G, ARGS, T_PARAMS).   
 
 
 /* Expressions */
 type_expr(_, num(_), int).
-/* TODO: On y'accedra jamais à ces deux, pcq on va passer par id(true)
-type_expr(_, true, bool).
-type_expr(_, false, bool).
-*/
 type_expr(G, if(E1,E2,E3), T) :- type_expr(G, E1, bool), type_expr(G, E2, T), type_expr(G, E3, T).
 type_expr(G, and(E1,E2), bool) :- type_expr(G, E1, bool), type_expr(G, E2, bool).
 type_expr(G, or(E1,E2), bool) :- type_expr(G, E1, bool), type_expr(G, E2, bool).
@@ -106,6 +133,7 @@ type_expr(G, id(X), T) :- find(G, X, T).
 type_expr(G, app(FCT, ARGS), T_RET) :-
     type_expr(G, FCT, (T_PARAMS, T_RET)),
     match_exprs_types(G, ARGS, T_PARAMS).
+/*TODO: repition pour app  ?*/
 type_expr(G, app(FCT, ARGS), T_RET) :-
     type_expr(G, FCT, (T_PARAMS, T_RET)),
     match_exprs_types(G, ARGS, T_PARAMS).
@@ -113,5 +141,8 @@ type_expr(G, abs(ID_T_PARAMS, BODY), (T_PARAMS, T_RET)) :-
     add_list_context(G, ID_T_PARAMS, NEW_G),
     type_expr(NEW_G, BODY, T_RET),
     get_types(ID_T_PARAMS, T_PARAMS).
+
+/* APS1 */
+type_block(G, block(CS), void) :- type_cmds(G, CS, void).
 
 
