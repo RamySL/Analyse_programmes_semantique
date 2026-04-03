@@ -34,3 +34,11 @@ let print_environement (env: environement) =
     Printf.printf "Environement : \n%s \n" (string_of_environement env)
 
 
+(**Retourne l'environement env etendu avec tous les binding formé par les éléments
+    de params et les valeurs de vs*)
+let bind (env:environement) params vs : environement =
+      if List.length params <> List.length vs then
+        failwith "arity mismatch"
+      else
+        List.fold_left2 (fun acc p v -> (p, v) :: acc) env params vs
+

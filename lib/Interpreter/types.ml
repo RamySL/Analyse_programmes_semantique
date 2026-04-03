@@ -38,6 +38,12 @@ and adress = int
 (* Absence de valeur ou bien valeur courante*)
 and memory_value = Any | Current of int
 
-and memory = adress ->  memory_value
+(*and memory = adress ->  memory_value*) (* non réaliste avec l'implem*)
 
 and output = int list
+
+
+module AdressOrd = struct
+  type t = adress
+  let compare = Int.compare
+end
