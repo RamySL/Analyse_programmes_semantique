@@ -22,7 +22,9 @@ let alloc (mem: memory): adress * memory =
   fresh_add, AdressMap.add fresh_add Any mem
 
 let rec eval_prog: prog -> memory * output = function
-    ASTProg cs -> eval_block init_env init_memory []  cs
+    ASTProg cs -> 
+      let mem_res, out_res = eval_block init_env init_memory []  cs in
+      mem_res, List.rev out_res
 
 and eval_block (env: environement) (mem: memory) (out: output): block -> memory * output = function
   | cs -> eval_cmds env mem out cs
@@ -44,7 +46,6 @@ and eval_stat (env: environement) (mem: memory) (out: output): stat ->  memory *
       (* Pattern is exaustif, typer post cond*)
       begin
         match eval_expr env mem e with
-          (*TODO: dans le future peut etre pb de liste inversé*)
           | InZ i -> mem, i :: out
           | _ -> failwith "impossible: expected InZ"
       end
