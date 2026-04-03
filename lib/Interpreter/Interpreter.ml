@@ -1,6 +1,7 @@
 open Types
 open Ast
 module StringMap = Map.Make(String)
+(*module AdressMap = Map.Make(adress)*)
 
 let pi1 = StringMap.of_list [("not", fun n -> if n = 1 then 0 else 1);]
 let pi2 = StringMap.of_list [("eq", fun n1 n2 -> if n1 = n2 then 1 else 0);
@@ -19,7 +20,7 @@ and eval_stat (env: environement) (out: output): stat -> output = function
     ASTEcho e -> 
       (* Pattern is exaustif, typer post cond*)
       begin
-        match eval_expr env e with
+        match eval_expr env mem e with
           (*TODO: dans le future peut etre pb de liste inversé*)
           | InZ i -> i :: out
           | _ -> failwith "impossible: expected InZ"
@@ -41,7 +42,7 @@ and eval_cmds (env: environement) (out: output): cmd list -> output = function
 
 and eval_def (env: environement): def -> environement = function
     ASTConst (id, _, e) ->
-        let v = eval_expr env e in
+        let v = eval_expr env mem e in
         ((id, v)::env)
 
     |ASTFun (id, _, args, e_body) ->
@@ -54,7 +55,7 @@ and eval_def (env: environement): def -> environement = function
       ::env
 
 
-and eval_expr (env: environement) (e:expr) : value = 
+and eval_expr (env: environement) (mem: memory) (e:expr) : value = 
 
     (*Retourne l'environement env etendu avec tous les binding formé par les éléments
     de params et les valeurs de vs*)
@@ -75,18 +76,18 @@ and eval_expr (env: environement) (e:expr) : value =
         v
     | ASTIf (e1, e2, e3) ->
       begin
-        match eval_expr env e1 with
+        match eval_expr env mem e1 with
         | InZ iCond ->
-            if iCond = 1 then eval_expr env e2
-            else eval_expr env e3
+            if iCond = 1 then eval_expr env mem e2
+            else eval_expr env mem e3
         | _ -> failwith "impossible: expected InZ for condition"
       end
     | ASTAnd (e1, e2) ->
       begin
-        match eval_expr env e1 with
+        match eval_expr env mem e1 with
           | InZ i1 ->
               if i1 = 1 then
-                (match eval_expr env e2 with
+                (match eval_expr env mem e2 with
                 | InZ i2 -> InZ i2
                 | _ -> failwith "impossible: expected InZ for e2")
               else
@@ -96,12 +97,12 @@ and eval_expr (env: environement) (e:expr) : value =
       end
     | ASTOr (e1, e2) ->
       begin
-        match eval_expr env e1 with
+        match eval_expr env mem e1 with
           | InZ i1 ->
               if i1 = 1 then
                 InZ i1
               else
-                (match eval_expr env e2 with
+                (match eval_expr env mem e2 with
                 | InZ i2 -> InZ i2
                 | _ -> failwith "impossible: expected InZ for e2")
           | _ ->
@@ -109,7 +110,7 @@ and eval_expr (env: environement) (e:expr) : value =
       end
 
     | ASTApp (ASTId f, es) when StringMap.mem f pi1 || StringMap.mem f pi2 ->
-      let vs = List.map (eval_expr env) es in
+      let vs = List.map (eval_expr env mem) es in
       begin match f, vs with
         | "not", [InZ n] ->
             InZ ((StringMap.find f pi1) n)
@@ -121,14 +122,14 @@ and eval_expr (env: environement) (e:expr) : value =
       end
 
     | ASTApp (e, es) ->
-      let vf = eval_expr env e in
-      let vs = List.map (eval_expr env) es in
+      let vf = eval_expr env mem e in
+      let vs = List.map (eval_expr env mem) es in
       begin match vf with
       | InF (e_body, params, env') ->
-          eval_expr (bind env' params vs) e_body
+          eval_expr (bind env' params vs) mem e_body
 
       | InFR (e_body, f_name, params, env') as self ->
-          eval_expr ((f_name, self) :: bind env' params vs) e_body
+          eval_expr ((f_name, self) :: bind env' params vs) mem e_body
 
       | _ ->
           failwith "app on a non fonctionnel value"
@@ -137,4 +138,3 @@ and eval_expr (env: environement) (e:expr) : value =
 
     | ASTLambda (args, e_body) ->
         InF(e_body, List.map (function ASTArg (ident, _) -> ident) args, env)    
-
