@@ -57,6 +57,7 @@ def:
   CONST id=IDENT ty=_type e=expr { ASTConst(id, ty, e) } 
 | FUN id=IDENT ty=_type LBRA args=separated_list(COMMA, arg) RBRA e=expr { ASTFun(id, ty, args, e) }
 | FUN REC id=IDENT ty=_type LBRA args=separated_list(COMMA, arg) RBRA e=expr { ASTFunREC(id, ty, args, e) }
+(*APS1*)
 | VAR id=IDENT ty=_type { ASTVar(id, ty) }
 | PROC id=IDENT LBRA args=separated_list(COMMA, arg) RBRA blck=block { ASTProc(id, args, blck) }
 | PROC REC id=IDENT LBRA args=separated_list(COMMA, arg) RBRA blck=block { ASTProcREC(id, args, blck) }
@@ -76,6 +77,7 @@ arg:
 
 stat:
   ECHO e=expr                  { ASTEcho(e) }
+  (*APS1*)
   | SET id=IDENT e=expr        { ASTSet(id, e)}
   | IF_STAT e=expr b1=block b2=block  { ASTIfStat(e, b1, b2) }
   | WHILE e=expr b=block      { ASTWhile(e, b)}

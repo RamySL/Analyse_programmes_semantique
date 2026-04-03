@@ -1,0 +1,8 @@
+[
+  VAR x int;
+  VAR y int;
+  SET x 5;
+  SET y 8;
+  ECHO x;
+  ECHO y
+]

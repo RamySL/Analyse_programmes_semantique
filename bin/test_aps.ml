@@ -12,6 +12,15 @@ let l_test_0 = [
   (testfile_name 0 7, "OK")
 ]
 
+let l_test_1 = [
+  (testfile_name 1 0, "OK");
+  (testfile_name 1 1, "OK");
+  (testfile_name 1 2, "OK");
+  (testfile_name 1 3, "OK");
+  (testfile_name 1 4, "OK");
+  (testfile_name 1 5, "OK");
+]
+
 (** Affiche pour chaque fichier la représentation Prolog du programme parsé *)
 let test_prologTerm (l_test : string list) =
   List.iter
@@ -43,7 +52,7 @@ let run_one_file (fname : string) (expected : string) =
 
       if res = "OK" then begin
         Format.printf "Execution   : OK\n";
-        List.iter (fun i -> Format.printf "%d\n" i) (eval_prog p)
+        List.iter (fun i -> Format.printf "%d\n" i) (snd(eval_prog p))
       end else begin
         Format.printf "Execution   : non lancee (erreur de type)\n"
       end
@@ -55,9 +64,17 @@ let run_one_file (fname : string) (expected : string) =
 let test_pipeline (l_test : (string * string) list) =
   List.iter (fun (fname, expected) -> run_one_file fname expected) l_test
 
+(* TODO: mettre en param le choix de quelle suite de test lancer*)
 let _ =
+  (*
   Format.printf "========== Tests de APS 0 ==========\n";
   Format.printf "- Test de PrologTerm\n";
   test_prologTerm (List.map fst l_test_0);
   Format.printf "\n- Pipeline complet : typage puis execution\n";
-  test_pipeline l_test_0
+  test_pipeline l_test_0;
+  *)
+  Format.printf "========== Tests de APS 1 ==========\n";
+  Format.printf "- Test de PrologTerm\n";
+  test_prologTerm (List.map fst l_test_1);
+  Format.printf "\n- Pipeline complet : typage puis execution\n";
+  test_pipeline l_test_1

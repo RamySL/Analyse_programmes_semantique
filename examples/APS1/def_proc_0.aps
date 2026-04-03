@@ -1,4 +1,0 @@
-[
-	PROC p [x:int] [ECHO x];
-	ECHO 3
-]

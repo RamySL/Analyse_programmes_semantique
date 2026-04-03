@@ -1,0 +1,6 @@
+[
+  PROC p [x : int] [
+    ECHO x
+  ];
+  CALL p 7
+]

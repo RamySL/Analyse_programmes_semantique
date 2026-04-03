@@ -1,0 +1,8 @@
+[
+  VAR x int;
+  PROC setx [v : int] [
+    SET x v
+  ];
+  CALL setx 9;
+  ECHO x
+]

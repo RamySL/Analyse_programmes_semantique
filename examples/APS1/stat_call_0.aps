@@ -1,5 +1,0 @@
-[
-PROC p [x:int, y:int] [ECHO (add x y)];
-CALL p 2 1;
-ECHO 0 
-]

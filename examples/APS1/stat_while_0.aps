@@ -1,4 +1,0 @@
-[
-WHILE true [ECHO 1];
-ECHO 0
-]

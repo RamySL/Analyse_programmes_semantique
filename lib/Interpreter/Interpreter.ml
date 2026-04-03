@@ -117,7 +117,7 @@ and eval_def (env: environement) (mem: memory): def -> environement * memory = f
       ::env,
       mem
 
-    |ASTVar (id, ty) -> 
+    |ASTVar (id, _) -> 
       let (fresh_add, new_mem) = alloc mem in
       ((id, InA fresh_add)::env), new_mem
 
