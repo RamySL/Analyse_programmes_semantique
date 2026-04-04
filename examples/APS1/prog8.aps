@@ -1,0 +1,7 @@
+[
+    VAR flag bool ;
+    SET flag (not false) ;
+    IF (and flag true)
+      [ ECHO 42 ]
+      [ ECHO 404 ]
+]

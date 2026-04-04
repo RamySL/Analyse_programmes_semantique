@@ -1,0 +1,9 @@
+[
+    PROC applyProc [ p : (int -> void), x : int ] [
+      CALL p x
+    ] ;
+    PROC printAddInt [ y : int ] [
+      ECHO (add y 10)
+    ] ;
+    CALL applyProc printAddInt 42
+ ]

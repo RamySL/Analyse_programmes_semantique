@@ -66,7 +66,6 @@ and eval_stat (env: environement) (mem: memory) (out: output): stat ->  memory *
           end
 
     | ASTIfStat(e, bk1, bk2) ->    
-      (*TODO: factorise avec while, if expr ..*) 
       let cond_i = Helper.eval_expr_for_InZ eval_expr env mem e "IfStat" in
 
       if cond_i = 1 then 

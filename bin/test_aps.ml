@@ -19,6 +19,10 @@ let l_test_1 = [
   (testfile_name 1 3, "OK");
   (testfile_name 1 4, "OK");
   (testfile_name 1 5, "OK");
+  (testfile_name 1 6, "OK");
+  (testfile_name 1 7, "OK");
+  (testfile_name 1 8, "OK");
+  (testfile_name 1 9, "OK");
 ]
 
 (** Affiche pour chaque fichier la représentation Prolog du programme parsé *)
@@ -66,13 +70,13 @@ let test_pipeline (l_test : (string * string) list) =
 
 (* TODO: mettre en param le choix de quelle suite de test lancer*)
 let _ =
-  (*
+  
   Format.printf "========== Tests de APS 0 ==========\n";
   Format.printf "- Test de PrologTerm\n";
   test_prologTerm (List.map fst l_test_0);
   Format.printf "\n- Pipeline complet : typage puis execution\n";
   test_pipeline l_test_0;
-  *)
+  
   Format.printf "========== Tests de APS 1 ==========\n";
   Format.printf "- Test de PrologTerm\n";
   test_prologTerm (List.map fst l_test_1);

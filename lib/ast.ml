@@ -8,12 +8,10 @@
 (* ==  Arbre de syntaxe abstraite                                          == *)
 (* ========================================================================== *)
 
-(*TODO: ça a du sens de faire des déf recursives ?*)
 type _type = 
    ASTBool
   | ASTInt
   | ASTFunT of _type list * _type
-  (*TODO: ya moyen que le void ne serve à rien*)
   | ASTVoid
 
 and arg = 

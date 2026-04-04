@@ -18,6 +18,7 @@ let rec pp_type fmt t =
   match t with 
     ASTBool -> fprintf fmt "bool"
     |ASTInt -> fprintf fmt "int"
+    |ASTVoid -> fprintf fmt "void"
     |ASTFunT (ts, ret) -> 
       fprintf fmt "([%a],%a)" pp_types ts pp_type ret
  
@@ -55,12 +56,7 @@ let rec pp_stat fmt s =
     | ASTIfStat(e, bk1, bk2) -> fprintf fmt "if_stat(%a,%a,%a)" pp_expr e pp_block bk1 pp_block bk2
     | ASTWhile(e, bk) -> fprintf fmt "while(%a,%a)" pp_expr e pp_block bk
     | ASTCall(e, es) -> fprintf fmt "call(%a,[%a])" pp_expr e pp_exprs es
-        (*
-and pp_cmd fmt cmd = 
-  match cmd with
-    ASTStat s -> fprintf fmt "end(%a)" pp_stat s
-    |ASTDef d -> pp_def fmt d
-*)
+
 and pp_cmds fmt cmds =
   match cmds with
     | [] -> 
@@ -70,9 +66,7 @@ and pp_cmds fmt cmds =
     | ASTStat s :: cmds ->
         fprintf fmt "stats(%a, %a)" pp_stat s pp_cmds cmds 
 
-(*and pp_cmds' fmt cmds = pp_lst_cma pp_cmd fmt cmds*)
 
-(* TODO: vérifie que c'est pas mauvais d'avoir en id String et pas ASTid*)
 and pp_def fmt def = 
   match def with 
       ASTConst(id, ty, e) -> 
