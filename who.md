@@ -3,7 +3,4 @@
 nom : SAIL
 prénom : Ramy
 numéro étudiant : 21501974
-adresse email :
-
-# (Binome n°2)
- Fait en monôme
+adresse email : 

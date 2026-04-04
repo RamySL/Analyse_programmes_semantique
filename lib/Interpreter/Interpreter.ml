@@ -13,10 +13,10 @@ let pi2 = StringMap.of_list [("eq", fun n1 n2 -> if n1 = n2 then 1 else 0);
                               ]
 let init_env = [("true", InZ 1); ("false", InZ 0)]
 let init_memory = AdressMap.empty
-(** Retourne une fonction de mémoire qui travaille sur une nouvelle mémoire*)
+
 type memory = memory_value AdressMap.t
 
-(** Génère une adresse fèche et la renvoi avec la mémoire dans laquelle on associe cette adresse à Any*)
+(** Génère une adresse frèche et la renvoi avec la mémoire dans laquelle on associe cette adresse à Any*)
 let alloc (mem: memory): adress * memory = 
   let fresh_add = AdressMap.cardinal mem in
   fresh_add, AdressMap.add fresh_add Any mem
@@ -66,26 +66,22 @@ and eval_stat (env: environement) (mem: memory) (out: output): stat ->  memory *
           end
 
     | ASTIfStat(e, bk1, bk2) ->    
-      (*TODO: factorise avec while, if expr ..*)   
-      begin
-        match eval_expr env mem e with
-        | InZ iCond ->
-            if iCond = 1 then eval_block env mem out bk1
-            else eval_block env mem out bk2
-        | _ -> failwith "impossible: expected InZ for condition"
-      end
+      (*TODO: factorise avec while, if expr ..*) 
+      let cond_i = Helper.eval_expr_for_InZ eval_expr env mem e "IfStat" in
 
+      if cond_i = 1 then 
+        eval_block env mem out bk1
+      else 
+        eval_block env mem out bk2
+  
     | ASTWhile(e, bk) -> 
-      begin
-        match eval_expr env mem e with
-        | InZ iCond ->
-            if iCond = 1 then 
-              let mem', out' = eval_block env mem out bk in
-            (* effet de bord est attendu sur e pour que la boucle termine*)
-              eval_stat env mem' out' (ASTWhile(e, bk))
-            else mem, out
-        | _ -> failwith "impossible: expected InZ for condition"
-      end
+      let cond_i = Helper.eval_expr_for_InZ eval_expr env mem e "While" in
+
+      if cond_i = 1 then 
+        let mem', out' = eval_block env mem out bk in
+        (* effet de bord est attendu sur e pour que la boucle termine*)
+        eval_stat env mem' out' (ASTWhile(e, bk))
+      else mem, out
 
     | ASTCall(e, es) -> 
             (*APP et APPR*)
@@ -153,41 +149,30 @@ and eval_expr (env: environement) (mem: memory) (e:expr) : value =
         end
         
     | ASTIf (e1, e2, e3) ->
-      begin
-        match eval_expr env mem e1 with
-        | InZ iCond ->
-            if iCond = 1 then eval_expr env mem e2
-            else eval_expr env mem e3
-        | _ -> failwith "impossible: expected InZ for condition"
-      end
+      let cond_i = Helper.eval_expr_for_InZ eval_expr env mem e1 "functionnal if" in
+
+      if cond_i = 1 then 
+        eval_expr env mem e2
+      else 
+        eval_expr env mem e3
 
     | ASTAnd (e1, e2) ->
-      begin
-        match eval_expr env mem e1 with
-          | InZ i1 ->
-              if i1 = 1 then
-                (match eval_expr env mem e2 with
-                | InZ i2 -> InZ i2
-                | _ -> failwith "impossible: expected InZ for e2")
-              else
-                InZ i1
-          | _ ->
-              failwith "impossible: expected InZ for e1"
-      end
+      let i1 = Helper.eval_expr_for_InZ eval_expr env mem e1 "And (e1)" in
+
+      if i1 = 1 then
+        let i2 = Helper.eval_expr_for_InZ eval_expr env mem e2 "And (e2)" in
+        InZ i2
+      else
+        InZ i1
 
     | ASTOr (e1, e2) ->
-      begin
-        match eval_expr env mem e1 with
-          | InZ i1 ->
-              if i1 = 1 then
-                InZ i1
-              else
-                (match eval_expr env mem e2 with
-                | InZ i2 -> InZ i2
-                | _ -> failwith "impossible: expected InZ for e2")
-          | _ ->
-              failwith "impossible: expected InZ for e1"
-      end
+      let i1 = Helper.eval_expr_for_InZ eval_expr env mem e1 "Or (e1)" in
+
+      if i1 = 1 then
+        InZ i1
+      else
+        let i2 = Helper.eval_expr_for_InZ eval_expr env mem e2 "Or (e2)" in
+        InZ i2
 
     | ASTApp (ASTId f, es) when StringMap.mem f pi1 || StringMap.mem f pi2 ->
       (*PRIM1 et PRIM2*)

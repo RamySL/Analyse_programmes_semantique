@@ -42,3 +42,9 @@ let bind (env:environement) params vs : environement =
       else
         List.fold_left2 (fun acc p v -> (p, v) :: acc) env params vs
 
+(** evalue l'expression e et leve une erreur si ce n'est pas un InZ, renvoi la valeur n de InZ n*)
+let eval_expr_for_InZ eval env mem e (src: string) : int  = 
+        match eval env mem e with
+        | InZ iCond -> iCond
+        | _ -> failwith (Printf.sprintf "Expected InZ : %s" src)
+
