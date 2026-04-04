@@ -29,6 +29,8 @@ open Ast
 (* APS1 *)
 %token VAR PROC SET IF_STAT WHILE CALL VOID
 %token BOOL INT
+(* APS1a *)
+%token VARP ADR
 
 %type <Ast.prog> prog
 
@@ -59,6 +61,7 @@ def:
 | FUN REC id=IDENT ty=_type LBRA args=separated_list(COMMA, arg) RBRA e=expr { ASTFunREC(id, ty, args, e) }
 (*APS1*)
 | VAR id=IDENT ty=_type { ASTVar(id, ty) }
+(*APS1a*)
 | PROC id=IDENT LBRA args=separated_list(COMMA, arg) RBRA blck=block { ASTProc(id, args, blck) }
 | PROC REC id=IDENT LBRA args=separated_list(COMMA, arg) RBRA blck=block { ASTProcREC(id, args, blck) }
 ;
@@ -72,7 +75,9 @@ _type:
 
 
 arg:
-  id=IDENT COL ty=_type        { ASTArg(id, ty) }
+    id=IDENT COL ty=_type             { ASTArg(id, ty) }
+  | VARP id=IDENT COL ty=_type        { ASTArgP(id, ty) }
+
 ;
 
 stat:
@@ -81,6 +86,7 @@ stat:
   | SET id=IDENT e=expr        { ASTSet(id, e)}
   | IF_STAT e=expr b1=block b2=block  { ASTIfStat(e, b1, b2) }
   | WHILE e=expr b=block      { ASTWhile(e, b)}
+  (*APS1a*)
   | CALL e=expr es=list(expr)     { ASTCall(e, es) }
 ;
 
@@ -92,6 +98,8 @@ expr:
 | LPAR OR a=expr b=expr RPAR { ASTOr(a, b) }
 | LPAR fn=expr es=list(expr) RPAR { ASTApp(fn, es) }
 | LBRA args=separated_list(COMMA, arg) RBRA body=expr { ASTLambda(args, body) }
+(*APS1a*)
+| LBRA ADR id=IDENT RBRA        { ASTAdr id }
 ;
 
 %%

@@ -16,6 +16,7 @@ type _type =
 
 and arg = 
   ASTArg of string * _type
+  |ASTArgP of string * _type (* Argument passé par référence*)
 
 and expr =
     ASTNum of int
@@ -25,6 +26,7 @@ and expr =
   | ASTOr of expr * expr
   | ASTApp of expr * expr list
   | ASTLambda of arg list * expr
+  | ASTAdr of string
 
 and stat =
       ASTEcho of expr

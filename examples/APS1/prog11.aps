@@ -1,0 +1,3 @@
+[PROC inc [x:int] [ SET x (add x 1) ];
+ECHO 0
+]
