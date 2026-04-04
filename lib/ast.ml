@@ -16,7 +16,12 @@ type _type =
 
 and arg = 
   ASTArg of string * _type
+
+  (* APS1a*)
+and argP = 
+  | ASTArg' of arg
   |ASTArgP of string * _type (* Argument passé par référence*)
+ 
 
 and expr =
     ASTNum of int
@@ -26,6 +31,10 @@ and expr =
   | ASTOr of expr * expr
   | ASTApp of expr * expr list
   | ASTLambda of arg list * expr
+
+(* APS1a*)
+and exprP = 
+  | ASTexpr of expr
   | ASTAdr of string
 
 and stat =
@@ -33,15 +42,15 @@ and stat =
     | ASTSet of string * expr
     | ASTIfStat of expr * block * block
     | ASTWhile of expr * block
-    | ASTCall of expr * expr list
+    | ASTCall of expr * exprP list
 
 and def = 
     ASTConst of string * _type * expr
   | ASTFun of string * _type * arg list * expr
   | ASTFunREC of string * _type * arg list * expr
   | ASTVar of string * _type
-  | ASTProc of string * arg list * block
-  | ASTProcREC of string * arg list * block
+  | ASTProc of string * argP list * block
+  | ASTProcREC of string * argP list * block
 
 
 (* type interne *)
