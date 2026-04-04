@@ -79,7 +79,7 @@ type_def(G, fun_rec(F, T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G]) 
     /** La différence avec l'ancienne c'est dans l'env d'eval on a mis la fonction elle même **/
     type_expr([(F, (T_PARAMS, T_RET)) | G_EVAL], BODY, T_RET).
 
-type_def(G, var(ID, T), [(ID, T) | G]).
+type_def(G, var(ID, T), [(ID, ref(T)) | G]).
 
 type_def(G, proc(P, ID_T_PARAMS, BODY), [(P, (T_PARAMS, void)) | G]) :- 
     get_types(ID_T_PARAMS, T_PARAMS),
@@ -106,8 +106,9 @@ type_cmds(_, end, void).
 
 /* Statements */
 type_stat(G, echo(E), void) :- type_expr(G,E,int).
+
 type_stat(G, set(ID, E) ,void) :- 
-    find(G, ID, T),
+    find(G, ID, ref(T)),
     type_expr(G, E, T).
 
 type_stat(G, if_stat(E, BK1, BK2), void) :-
@@ -129,6 +130,9 @@ type_expr(_, num(_), int).
 type_expr(G, if(E1,E2,E3), T) :- type_expr(G, E1, bool), type_expr(G, E2, T), type_expr(G, E3, T).
 type_expr(G, and(E1,E2), bool) :- type_expr(G, E1, bool), type_expr(G, E2, bool).
 type_expr(G, or(E1,E2), bool) :- type_expr(G, E1, bool), type_expr(G, E2, bool).
+/* IDR */
+type_expr(G, id(X), T) :- find(G, X, ref(T)).
+/* IDV */
 type_expr(G, id(X), T) :- find(G, X, T).
 type_expr(G, app(FCT, ARGS), T_RET) :-
     type_expr(G, FCT, (T_PARAMS, T_RET)),

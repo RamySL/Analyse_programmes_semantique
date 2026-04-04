@@ -1,0 +1,4 @@
+[
+CONST x int 0;
+SET x 42
+]

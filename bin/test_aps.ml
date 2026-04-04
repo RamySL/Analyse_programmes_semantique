@@ -23,6 +23,8 @@ let l_test_1 = [
   (testfile_name 1 7, "OK");
   (testfile_name 1 8, "OK");
   (testfile_name 1 9, "OK");
+  (*1a*)
+  (testfile_name 1 10, "KO"); (* Set sur Const*)
 ]
 
 (** Affiche pour chaque fichier la représentation Prolog du programme parsé *)
