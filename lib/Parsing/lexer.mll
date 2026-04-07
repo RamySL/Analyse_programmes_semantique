@@ -50,7 +50,13 @@ rule token = parse
   | "void"           { VOID }
   (* APS1a *)
   | "var"             { VARP }
-  | "adr"            { ADR }
+  | "adr"             { ADR }
+  (* APS2 *)
+  | "alloc"           { ALLOC }
+  | "len"             { LEN }
+  | "nth"             { NTH }
+  | "vset"            { VSET }
+  | "vec"             { VEC }
 
   | ['0'-'9']+('.'['0'-'9'])? as lxm { NUM(int_of_string lxm) }
   | ['a'-'z']['a'-'z''A'-'Z''0'-'9']* as lxm { IDENT(lxm) }

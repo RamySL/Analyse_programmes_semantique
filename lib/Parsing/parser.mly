@@ -31,6 +31,8 @@ open Ast
 %token BOOL INT
 (* APS1a *)
 %token VARP ADR
+(* APS2 *)
+%token LEN NTH VSET VEC ALLOC
 
 %type <Ast.prog> prog
 
@@ -71,6 +73,8 @@ _type:
 | INT                           { ASTInt }
 | VOID                          { ASTVoid }
 | LPAR ts=separated_list(STAR, _type) ARROW rt=_type RPAR { ASTFunT(ts, rt) }
+| LPAR VEC ty=_type RPAR        { ASTVec(ty) }
+
 ;
 
 
@@ -85,13 +89,18 @@ argP:
 stat:
   ECHO e=expr                  { ASTEcho(e) }
   (*APS1*)
-  | SET id=IDENT e=expr        { ASTSet(id, e)}
+  | SET lv=lvalue e=expr        { ASTSet(lv, e)} 
   | IF_STAT e=expr b1=block b2=block  { ASTIfStat(e, b1, b2) }
   | WHILE e=expr b=block      { ASTWhile(e, b)}
   (*APS1a*)
   (*FIXME: on doit avoir un IDENT pas une expr *)
   | CALL e=expr es=list(exprP)     { ASTCall(e, es) }
 ;
+
+(* APS2 *)
+lvalue:
+  | id=IDENT                    { ASTLvId id }
+  | NTH lv=lvalue e=expr        { ASTLvNth (lv, e) }
 
 expr:
   n=NUM                         { ASTNum(n) }
@@ -101,6 +110,11 @@ expr:
 | LPAR OR a=expr b=expr RPAR { ASTOr(a, b) }
 | LPAR fn=expr es=list(expr) RPAR { ASTApp(fn, es) }
 | LBRA args=separated_list(COMMA, arg) RBRA body=expr { ASTLambda(args, body) }
+(* APS2 *)
+| LPAR ALLOC e=expr RPAR        { ASTAlloc(e) }
+| LPAR LEN e=expr RPAR          { ASTLen(e) }
+| LPAR NTH e1=expr e2=expr RPAR { ASTNth(e1, e2) }
+| LPAR VSET e1=expr e2=expr e3=expr RPAR { ASTVset(e1, e2, e3) }
 
 ;
 

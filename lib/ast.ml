@@ -11,8 +11,10 @@
 type _type = 
    ASTBool
   | ASTInt
+  (*TODO: unused ?*)
   | ASTFunT of _type list * _type
   | ASTVoid
+  | ASTVec of _type
 
 and arg = 
   ASTArg of string * _type
@@ -31,6 +33,11 @@ and expr =
   | ASTOr of expr * expr
   | ASTApp of expr * expr list
   | ASTLambda of arg list * expr
+  (* APS2 *)
+  | ASTAlloc of expr
+  | ASTLen of expr
+  | ASTNth of expr * expr
+  | ASTVset of expr * expr * expr
 
 (* APS1a*)
 and exprP = 
@@ -39,10 +46,15 @@ and exprP =
 
 and stat =
       ASTEcho of expr
-    | ASTSet of string * expr
+    | ASTSet of lvalue * expr
     | ASTIfStat of expr * block * block
     | ASTWhile of expr * block
     | ASTCall of expr * exprP list
+
+(* APS2 *)
+and lvalue = 
+  | ASTLvId of string
+  | ASTLvNth of lvalue * expr 
 
 and def = 
     ASTConst of string * _type * expr

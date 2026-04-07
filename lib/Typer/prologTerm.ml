@@ -67,10 +67,13 @@ and pp_exprPs fmt eps = pp_lst_cma pp_exprP fmt eps
 let rec pp_stat fmt s =
   match s with
       ASTEcho e -> fprintf fmt "echo(%a)" pp_expr e
-    | ASTSet(id, e) -> fprintf fmt "set(%s, %a)" id pp_expr e
+    | ASTSet(lv, e) -> fprintf fmt "set(%a, %a)" pp_lvalue lv pp_expr e
     | ASTIfStat(e, bk1, bk2) -> fprintf fmt "if_stat(%a,%a,%a)" pp_expr e pp_block bk1 pp_block bk2
     | ASTWhile(e, bk) -> fprintf fmt "while(%a,%a)" pp_expr e pp_block bk
     | ASTCall(e, eps) -> fprintf fmt "call(%a,[%a])" pp_expr e pp_exprPs eps
+
+and pp_lvalue = 
+    failwith "TODO"
 
 and pp_cmds fmt cmds =
   match cmds with
