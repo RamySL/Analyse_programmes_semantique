@@ -18,13 +18,16 @@ let print_prog () =
     | Ok (res, _) ->
         let res = String.trim res in
         Format.printf "%s\n" res;
-        if res = "OK" then begin
+        if res = "OK" then 
+          begin
           Format.printf "==== Evaluation du programme donne comme sortie ====\n";
           (*List.iter (fun i -> Format.printf "%d\n" i) (snd (eval_prog p))*)
-        end else begin
-          prerr_endline "Erreur de type";
-          exit 1
-        end
+          end 
+        else 
+          begin
+            Format.printf "Erreur de type\n";
+            exit 1
+          end
     | Error (`Msg m) ->
         prerr_endline m;
         exit 1

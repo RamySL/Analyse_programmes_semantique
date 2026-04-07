@@ -25,8 +25,11 @@ let l_test_1 = [
   (testfile_name 1 9, "OK");
   (*1a*)
   (testfile_name 1 10, "KO"); (* Set sur Const*)
-  (testfile_name 1 11, "OK"); (* Set sur sur parametre de procedure qui est une VAR*)
+  (testfile_name 1 11, "OK");
   (testfile_name 1 12, "KO"); (* Constante mais décllarée comme var dans la la signature*)
+  (testfile_name 1 13, "KO"); (* Manque le var dans la signature*)
+  (* TODO: ici ya pas d'erreur parceque VAR x int introduit déja x avec ref(int) donc l'absence de (adr x) ne pose pas de pb*)
+  (testfile_name 1 14, "KO"); (* CALL sans adr pour l'argument*)
   
 ]
 

@@ -89,6 +89,7 @@ stat:
   | IF_STAT e=expr b1=block b2=block  { ASTIfStat(e, b1, b2) }
   | WHILE e=expr b=block      { ASTWhile(e, b)}
   (*APS1a*)
+  (*FIXME: on doit avoir un IDENT pas une expr *)
   | CALL e=expr es=list(exprP)     { ASTCall(e, es) }
 ;
 
@@ -106,7 +107,7 @@ expr:
 (*APS1a*)
 exprP: 
 | e=expr                        { ASTexpr e }
-| LBRA ADR id=IDENT RBRA        { ASTAdr id }
+| LPAR ADR id=IDENT RPAR        { ASTAdr id }
 
 
 %%

@@ -5,15 +5,16 @@ type_check(prog(P)) :- type_prog(prog(P), void), write("OK\n").
 type_check(_) :- write("KO\n").
 
 context_init([
-    (true, bool),
+    /*(true, bool),
     (false, bool),
     (not, ([bool], bool)),
     (eq, ([int, int], bool)),
     (lt, ([int, int], bool)),
-    (add, ([int, int], int)),
+    
     (sub, ([int, int], int)),
     (mul, ([int, int], int)),
-    (div, ([int, int], int))
+    (div, ([int, int], int)) */
+    (add, ([int, int], int))
 ]).
 /** !! Il ya une association entre ce qui est choisit dans prologTerm.ml et les noms d'atom ici **/
 /**
@@ -54,12 +55,23 @@ match_exprs_types(G, [E | ES], [T | TS]) :-
     type_expr(G, E, T),
     match_exprs_types(G, ES, TS).
 
+/**
+Vérifie que les type des expressions EXPRS match celui de TYPES dans l'ordre.
+Version APS1a pour la traitement du passage var valeur/référence
+*/
+
+match_exprPs_types(_, [], []).
+
+match_exprPs_types(G, [E | ES], [T | TS]) :-  
+    type_exprP(G, E, T),
+    match_exprPs_types(G, ES, TS).
+
 /* extrait la listes des identificateurs des paramètres associés à leur type marqué ou non de ref selon qu’ils ont
 été déclarés avec la modalité var ou no
 */
 
 extract_id_var([], []).
-extract_id_var([(var(ID), T) | TAIL], [(ID, T) | TS]) :- extract_id_var(TAIL, TS).
+extract_id_var([(var(ID), T) | TAIL], [(ID, ref(T)) | TS]) :- extract_id_var(TAIL, TS).
 extract_id_var([(ID, T) | TAIL], [(ID, T) | TS]) :- extract_id_var(TAIL, TS).
 
 /* Prog */
@@ -132,7 +144,7 @@ type_stat(G, while(E, BK), void) :-
 
 type_stat(G, call(ID, ARGS), void) :- 
     type_expr(G, ID, (T_PARAMS, void)),
-    match_exprs_types(G, ARGS, T_PARAMS).   
+    match_exprPs_types(G, ARGS, T_PARAMS).   
 
 
 /* Expressions */
@@ -155,6 +167,14 @@ type_expr(G, abs(ID_T_PARAMS, BODY), (T_PARAMS, T_RET)) :-
     add_list_context(G, ID_T_PARAMS, NEW_G),
     type_expr(NEW_G, BODY, T_RET),
     get_types(ID_T_PARAMS, T_PARAMS).
+/* Expressions d'arguments APS1a */
+type_exprP(G, adr(X), ref(T)) :- find(G, X, ref(T)).
+/* TODO: détaille à mettre dans le rapport que ça : type_exprP(G, E, T) :- type_expr(G, E, T).
+tout seule, ça ne suffit pas, pour imposer que l'absence de adr ne permette pas de d'effet de bord mémoire.
+*/
+/*FIXME: Problème de ref(ref(ref)) */
+type_exprP(G, E, T) :- type_expr(G, E, ref(T))!. /* Puisque pas de 'adr' on unwrap le ref pour ne pas permettre de SET */
+type_exprP(G, E, T) :- type_expr(G, E, T).
 
 /* APS1 */
 type_block(G, block(CS), void) :- type_cmds(G, CS, void).
