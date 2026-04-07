@@ -1,4 +1,4 @@
-open Types
+(*open Types
 open Ast
 module StringMap = Map.Make(String)
 module AdressMap = Map.Make(AdressOrd)
@@ -210,3 +210,4 @@ and eval_expr (env: environement) (mem: memory): expr -> value = function
 
     | ASTLambda (args, e_body) ->
         InF(e_body, List.map (function ASTArg (ident, _) -> ident) args, env)    
+*)

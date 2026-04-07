@@ -70,7 +70,7 @@ let rec pp_exprP fmt ep =
     match ep with 
     (* On wrap ?*)
     | ASTexpr e -> pp_expr fmt e
-    | ASTAdr id -> fprintf fmt "adr(%s)" id 
+    | ASTAdr id -> fprintf fmt "adr(id(%s))" id 
 
 and pp_exprPs fmt eps = pp_lst_cma pp_exprP fmt eps
 
@@ -84,7 +84,7 @@ let rec pp_stat fmt s =
 
 and pp_lvalue fmt lv = 
     match lv with 
-        |ASTLvId id -> fprintf fmt "%s" id
+        |ASTLvId id -> fprintf fmt "id(%s)" id
         |ASTLvNth(lv, e) -> fprintf fmt "nth(%a,%a)" pp_lvalue lv pp_expr e
 
 and pp_cmds fmt cmds =

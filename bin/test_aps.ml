@@ -64,7 +64,7 @@ let run_one_file (fname : string) (expected : string) =
 
       if res = "OK" then begin
         Format.printf "Execution   : OK\n";
-        List.iter (fun i -> Format.printf "%d\n" i) (snd(eval_prog p))
+        (*List.iter (fun i -> Format.printf "%d\n" i) (snd(eval_prog p))*)
       end else begin
         Format.printf "Execution   : non lancee (erreur de type)\n"
       end

@@ -99,8 +99,8 @@ stat:
 
 (* APS2 *)
 lvalue:
-  | id=IDENT                    { ASTLvId id }
-  | NTH lv=lvalue e=expr        { ASTLvNth (lv, e) }
+  | id=IDENT                            { ASTLvId id }
+  | LPAR NTH lv=lvalue e=expr RPAR      { ASTLvNth (lv, e) }
 
 expr:
   n=NUM                         { ASTNum(n) }

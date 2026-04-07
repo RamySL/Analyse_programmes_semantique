@@ -1,0 +1,9 @@
+[
+  VAR v (vec int);
+  SET v (alloc 3);
+  SET v (vset v 0 10);
+  SET v (vset v 1 20);
+  ECHO (nth v 0);
+  ECHO (nth v 1)
+]
+
