@@ -54,6 +54,14 @@ match_exprs_types(G, [E | ES], [T | TS]) :-
     type_expr(G, E, T),
     match_exprs_types(G, ES, TS).
 
+/* extrait la listes des identificateurs des paramètres associés à leur type marqué ou non de ref selon qu’ils ont
+été déclarés avec la modalité var ou no
+*/
+
+extract_id_var([], []).
+extract_id_var([(var(ID), T) | TAIL], [(ID, T) | TS]) :- extract_id_var(TAIL, TS).
+extract_id_var([(ID, T) | TAIL], [(ID, T) | TS]) :- extract_id_var(TAIL, TS).
+
 /* Prog */
 
 type_prog(prog(P), void) :- 
@@ -82,13 +90,15 @@ type_def(G, fun_rec(F, T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G]) 
 type_def(G, var(ID, T), [(ID, ref(T)) | G]).
 
 type_def(G, proc(P, ID_T_PARAMS, BODY), [(P, (T_PARAMS, void)) | G]) :- 
-    get_types(ID_T_PARAMS, T_PARAMS),
-    add_list_context(G, ID_T_PARAMS, G_EVAL),
+    extract_id_var(ID_T_PARAMS, EXTRACTED_VAR),
+    get_types(EXTRACTED_VAR, T_PARAMS),
+    add_list_context(G, EXTRACTED_VAR, G_EVAL),
     type_block(G_EVAL, BODY, void).
 
 type_def(G, proc_rec(P, ID_T_PARAMS, BODY), [(P, (T_PARAMS, void)) | G]) :- 
-    get_types(ID_T_PARAMS, T_PARAMS),
-    add_list_context(G, ID_T_PARAMS, G_EVAL),
+    extract_id_var(ID_T_PARAMS, EXTRACTED_VAR),
+    get_types(EXTRACTED_VAR, T_PARAMS),
+    add_list_context(G, EXTRACTED_VAR, G_EVAL),
     type_block([(P, (T_PARAMS, void)) | G_EVAL], BODY, void).
 
 

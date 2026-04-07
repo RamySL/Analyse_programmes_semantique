@@ -25,7 +25,8 @@ let l_test_1 = [
   (testfile_name 1 9, "OK");
   (*1a*)
   (testfile_name 1 10, "KO"); (* Set sur Const*)
-  (testfile_name 1 11, "KO"); (* Set sur sur parametre de procedure*)
+  (testfile_name 1 11, "OK"); (* Set sur sur parametre de procedure qui est une VAR*)
+  (testfile_name 1 12, "KO"); (* Constante mais décllarée comme var dans la la signature*)
   
 ]
 

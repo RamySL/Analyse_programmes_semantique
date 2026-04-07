@@ -20,7 +20,7 @@ and arg =
   (* APS1a*)
 and argP = 
   | ASTArg' of arg
-  |ASTArgP of string * _type (* Argument passé par référence*)
+  | ASTArgP of string * _type (* Argument passé par référence*)
  
 
 and expr =
