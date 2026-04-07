@@ -21,6 +21,7 @@ let rec pp_type fmt t =
     |ASTVoid -> fprintf fmt "void"
     |ASTFunT (ts, ret) -> 
       fprintf fmt "([%a],%a)" pp_types ts pp_type ret
+    |ASTVec t -> fprintf fmt "vec(%a)" pp_type t
  
 and pp_types fmt ts = pp_lst_cma pp_type fmt ts
 
@@ -53,6 +54,15 @@ let rec pp_expr fmt e =
       fprintf fmt "app(%a,[%a])" pp_expr e pp_exprs es
   | ASTLambda (args, body) ->
       fprintf fmt "abs([%a],%a)" pp_args args pp_expr body
+    (* APS2 *)
+  | ASTAlloc e ->
+      fprintf fmt "alloc(%a)" pp_expr e
+  | ASTLen e ->
+      fprintf fmt "len(%a)" pp_expr e
+  | ASTNth (e1, e2) ->
+      fprintf fmt "nth(%a,%a)" pp_expr e1 pp_expr e2
+  | ASTVset (e1, e2, e3) ->
+      fprintf fmt "vset(%a,%a,%a)" pp_expr e1 pp_expr e2 pp_expr e3
 
 and pp_exprs fmt es = pp_lst_cma pp_expr fmt es
 
@@ -72,8 +82,10 @@ let rec pp_stat fmt s =
     | ASTWhile(e, bk) -> fprintf fmt "while(%a,%a)" pp_expr e pp_block bk
     | ASTCall(e, eps) -> fprintf fmt "call(%a,[%a])" pp_expr e pp_exprPs eps
 
-and pp_lvalue = 
-    failwith "TODO"
+and pp_lvalue fmt lv = 
+    match lv with 
+        |ASTLvId id -> fprintf fmt "%s" id
+        |ASTLvNth(lv, e) -> fprintf fmt "nth(%a,%a)" pp_lvalue lv pp_expr e
 
 and pp_cmds fmt cmds =
   match cmds with

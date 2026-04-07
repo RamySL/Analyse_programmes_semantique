@@ -4,16 +4,16 @@ main :- read(user_input, X), type_check(X).
 type_check(prog(P)) :- type_prog(prog(P), void), write("OK\n").
 type_check(_) :- write("KO\n").
 
+/* TODO: faudrait peut etre faire un type FunT pour matcher avec l'AST */
 context_init([
-    /*(true, bool),
+    (true, bool),
     (false, bool),
     (not, ([bool], bool)),
     (eq, ([int, int], bool)),
     (lt, ([int, int], bool)),
-    
     (sub, ([int, int], int)),
     (mul, ([int, int], int)),
-    (div, ([int, int], int)) */
+    (div, ([int, int], int)),
     (add, ([int, int], int))
 ]).
 /** !! Il ya une association entre ce qui est choisit dans prologTerm.ml et les noms d'atom ici **/
@@ -74,8 +74,15 @@ extract_id_var([], []).
 extract_id_var([(var(ID), T) | TAIL], [(ID, ref(T)) | TS]) :- extract_id_var(TAIL, TS).
 extract_id_var([(ID, T) | TAIL], [(ID, T) | TS]) :- extract_id_var(TAIL, TS).
 
-/* Prog */
+/* member */
+mem(ELT, [ELT | _]).
+mem(ELT, [_ | TAIL]) :- mem(ELT, TAIL).
 
+/** test si le type donné est un type valide du langage */
+is_type(T) :- mem(T, [int, bool, void, vec(_), ([_|_], _)]). /* le dernier est censé représenté les fcts */
+
+
+/* Prog */
 type_prog(prog(P), void) :- 
     context_init(G0),
     type_block(G0, P, void).
@@ -133,6 +140,10 @@ type_stat(G, set(ID, E) ,void) :-
     find(G, ID, ref(T)),
     type_expr(G, E, T).
 
+type_stat(G, set(nth(E1, E2), E) ,void) :- 
+    type_expr(G, nth(E1, E2), T),
+    type_expr(G, E, T).
+
 type_stat(G, if_stat(E, BK1, BK2), void) :-
     type_expr(G, E, bool), 
     type_block(G, BK1, void), 
@@ -167,13 +178,36 @@ type_expr(G, abs(ID_T_PARAMS, BODY), (T_PARAMS, T_RET)) :-
     add_list_context(G, ID_T_PARAMS, NEW_G),
     type_expr(NEW_G, BODY, T_RET),
     get_types(ID_T_PARAMS, T_PARAMS).
+/* APS2 */
+type_expr(G, alloc(E), vec(T)) :- 
+    is_type(T), /* TODO */
+    type_expr(G, E, int).
+
+type_expr(G, nth(E1, E2), T) :- 
+    type_expr(G, E1, vec(T)),
+    is_type(T),
+    type_expr(G, E2, int).
+
+type_expr(G, len(E), int) :- 
+    type_expr(G, E, vec(T)),
+    is_type(T).
+
+type_expr(G, vset(E1, E2, E3), vec(T)) :- 
+    type_expr(G, E1, vec(T)),
+    is_type(T), 
+    type_expr(G, E2, int),
+    type_expr(G, E3, T).
+
+
+
+
 /* Expressions d'arguments APS1a */
 type_exprP(G, adr(X), ref(T)) :- find(G, X, ref(T)).
 /* TODO: détaille à mettre dans le rapport que ça : type_exprP(G, E, T) :- type_expr(G, E, T).
 tout seule, ça ne suffit pas, pour imposer que l'absence de adr ne permette pas de d'effet de bord mémoire.
 */
 /*FIXME: Problème de ref(ref(ref)) */
-type_exprP(G, E, T1) :- type_expr(G, E, ref(T2))!. /* Puisque pas de 'adr' on unwrap le ref pour ne pas permettre de SET */
+type_exprP(G, E, T) :- type_expr(G, E, ref(T)). /* Puisque pas de 'adr' on unwrap le ref pour ne pas permettre de SET */
 type_exprP(G, E, T) :- type_expr(G, E, T).
 
 /* APS1 */

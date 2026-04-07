@@ -52,6 +52,8 @@ and stat =
     | ASTCall of expr * exprP list
 
 (* APS2 *)
+(* On définit qd même un type lvalue même si c'est un sous type de 
+expr pour contraindre la construction : ASTSet of lvalue * expr *)
 and lvalue = 
   | ASTLvId of string
   | ASTLvNth of lvalue * expr 
