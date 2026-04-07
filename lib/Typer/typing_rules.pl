@@ -173,7 +173,7 @@ type_exprP(G, adr(X), ref(T)) :- find(G, X, ref(T)).
 tout seule, ça ne suffit pas, pour imposer que l'absence de adr ne permette pas de d'effet de bord mémoire.
 */
 /*FIXME: Problème de ref(ref(ref)) */
-type_exprP(G, E, T) :- type_expr(G, E, ref(T))!. /* Puisque pas de 'adr' on unwrap le ref pour ne pas permettre de SET */
+type_exprP(G, E, T1) :- type_expr(G, E, ref(T2))!. /* Puisque pas de 'adr' on unwrap le ref pour ne pas permettre de SET */
 type_exprP(G, E, T) :- type_expr(G, E, T).
 
 /* APS1 */

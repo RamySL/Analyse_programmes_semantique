@@ -1,4 +1,4 @@
-(*open Types
+open Types
 open Ast
 module StringMap = Map.Make(String)
 module AdressMap = Map.Make(AdressOrd)
@@ -85,7 +85,7 @@ and eval_stat (env: environement) (mem: memory) (out: output): stat ->  memory *
     | ASTCall(e, es) -> 
             (*APP et APPR*)
       let vp = eval_expr env mem e in
-      let vs = List.map (eval_expr env mem) es in
+      let vs = List.map (eval_exprP env mem) es in
       begin match vp with
         | InP (bk, params, env') ->
             eval_block (Helper.bind env' params vs) mem out bk
@@ -97,6 +97,11 @@ and eval_stat (env: environement) (mem: memory) (out: output): stat ->  memory *
             failwith "app on a non fonctionnel value"
       end
 
+and eval_exprP (env: environement) (mem: memory): exprP -> value = function
+  | ASTexpr e -> eval_expr env mem e
+  | ASTAdr id -> Helper.match_value_for_InA (snd (List.find (fun (id', _) -> id = id') env))
+
+      
 and eval_def (env: environement) (mem: memory): def -> environement * memory = function
     ASTConst (id, _, e) ->
         let v = eval_expr env mem e in
@@ -118,17 +123,17 @@ and eval_def (env: environement) (mem: memory): def -> environement * memory = f
       ((id, InA fresh_add)::env), new_mem
 
     |ASTProc(id, args, bk) ->
-      (id, InP(bk, List.map (function ASTArg(ident, _) -> ident) args, env))
+      (* On a pas explicitement un 'var xi' le var est inclus dans le constructeur ASTArgP *)
+      (id, InP(bk, List.map (function ASTArg'(ASTArg (ident, _)) | ASTArgP (ident, _) -> ident ) args, env))
       ::env,
       mem
     |ASTProcREC(id, args, bk) ->
-      (id, InPR(bk, id, List.map (function ASTArg(ident, _) -> ident) args, env))
+      (id, InPR(bk, id, List.map (function ASTArg'(ASTArg (ident, _)) | ASTArgP (ident, _) -> ident ) args, env))
       ::env,
       mem
 
-and eval_expr (env: environement) (mem: memory) (e:expr) : value = 
+and eval_expr (env: environement) (mem: memory): expr -> value = function
 
-    match e with 
     | ASTNum n ->
       (*Note: pour la section 'Fonctions sémantiques utiles' des notes de cours APS0.
       Ici la conversion est faite par le lexer (int_of_string)*)
@@ -205,4 +210,3 @@ and eval_expr (env: environement) (mem: memory) (e:expr) : value =
 
     | ASTLambda (args, e_body) ->
         InF(e_body, List.map (function ASTArg (ident, _) -> ident) args, env)    
-*)

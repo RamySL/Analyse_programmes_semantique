@@ -1,5 +1,4 @@
 open Types
-
 (*
   Retourne le string représentant l'environement
 *)
@@ -47,4 +46,9 @@ let eval_expr_for_InZ eval env mem e (src: string) : int  =
         match eval env mem e with
         | InZ iCond -> iCond
         | _ -> failwith (Printf.sprintf "Expected InZ : %s" src)
+
+let match_value_for_InA: value -> value = function
+        | InA a -> InA a
+        | _ -> failwith "Expected and Adress"
+ 
 
