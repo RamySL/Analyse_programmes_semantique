@@ -6,14 +6,14 @@ type_check(_) :- write("KO\n").
 
 /* TODO: faudrait peut etre faire un type FunT pour matcher avec l'AST */
 context_init([
-    /*(true, bool),
+    (true, bool),
     (false, bool),
     (not, ([bool], bool)),
     (eq, ([int, int], bool)),
     (lt, ([int, int], bool)),
     (sub, ([int, int], int)),
     (mul, ([int, int], int)),
-    (div, ([int, int], int)),*/
+    (div, ([int, int], int)),
     (add, ([int, int], int))
 ]).
 /** !! Il ya une association entre ce qui est choisit dans prologTerm.ml et les noms d'atom ici **/

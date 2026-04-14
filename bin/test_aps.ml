@@ -33,6 +33,13 @@ let l_test_1 = [
   
 ]
 
+let l_test_2 = [
+  (testfile_name 2 0, "OK");
+  (testfile_name 2 1, "OK");
+  (testfile_name 2 2, "OK");
+  (testfile_name 2 3, "OK");
+]
+
 (** Affiche pour chaque fichier la représentation Prolog du programme parsé *)
 let test_prologTerm (l_test : string list) =
   List.iter
@@ -54,10 +61,13 @@ let run_one_file (fname : string) (expected : string) =
   pp_prog Format.str_formatter p;
   let s = Format.flush_str_formatter () in
 
-  Format.printf "\n===== %s =====\n" fname;
+  
 
   match cmd_typ s with
   | Ok (res, _) ->
+      let imoji = if (res = expected) then "✅" else "❌" in
+      Format.printf "\n===== %s ===== | Attendu match le typage : %s \n" fname imoji;
+
       let res = String.trim res in
       Format.printf "Typeur      : %s\n" res;
       Format.printf "Attendu     : %s\n" expected;
@@ -79,7 +89,7 @@ let test_pipeline (l_test : (string * string) list) =
 (* TODO: mettre en param le choix de quelle suite de test lancer*)
 let _ =
   
-  Format.printf "========== Tests de APS 0 ==========\n";
+  (*Format.printf "========== Tests de APS 0 ==========\n";
   Format.printf "- Test de PrologTerm\n";
   test_prologTerm (List.map fst l_test_0);
   Format.printf "\n- Pipeline complet : typage puis execution\n";
@@ -89,4 +99,10 @@ let _ =
   Format.printf "- Test de PrologTerm\n";
   test_prologTerm (List.map fst l_test_1);
   Format.printf "\n- Pipeline complet : typage puis execution\n";
-  test_pipeline l_test_1
+  test_pipeline l_test_1; *)
+
+  Format.printf "========== Tests de APS 2 ==========\n";
+  Format.printf "- Test de PrologTerm\n";
+  test_prologTerm (List.map fst l_test_2);
+  Format.printf "\n- Pipeline complet : typage puis execution\n";
+  test_pipeline l_test_2

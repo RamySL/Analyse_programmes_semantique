@@ -16,6 +16,9 @@
       Fermetures procédurales P = Cmds × ident∗ × E
       Fermetures procédurales récursives P R = Cmds × ident × ident∗ × E
       Valeurs V ⊕ = A ⊕ P ⊕ P R
+
+  - APS2:
+
 *)
 
 open Ast
@@ -24,7 +27,13 @@ open Ast
 type environement = (string * value) list
 
 (** Valeurs APS : entiers, cloture de fonction, cloture de fonction recursive, Adresse mémoire, *)
-and value = InZ of int | InF of closure | InFR of rec_closure | InA of adress  | InP of procedure_closure | InPR of rec_procedure_closure 
+and value = 
+  | InZ of int 
+  | InF of closure 
+  | InFR of rec_closure 
+  | InA of adress  
+  | InP of procedure_closure 
+  | InPR of rec_procedure_closure 
 
 and closure = expr * string list * environement
                     (*nom de la fct, nom de ces params*)
@@ -35,13 +44,16 @@ and procedure_closure = block * string list * environement
 and rec_procedure_closure = block * string * string list * environement
 
 and adress = int
+
+
 (* Absence de valeur ou bien valeur courante*)
 and memory_value = Any | Current of int
+
+
 
 (*and memory = adress ->  memory_value*) (* non réaliste avec l'implem*)
 
 and output = int list
-
 
 module AdressOrd = struct
   type t = adress

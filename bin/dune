@@ -5,5 +5,5 @@
 
 (executable
  (public_name tests)
-  (name test_aps)
-  (libraries aps_syntax))
+ (name test_aps)
+ (libraries aps_syntax))
