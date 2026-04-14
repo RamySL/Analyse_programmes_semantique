@@ -41,14 +41,19 @@ let bind (env:environement) params vs : environement =
       else
         List.fold_left2 (fun acc p v -> (p, v) :: acc) env params vs
 
-(** evalue l'expression e et leve une erreur si ce n'est pas un InZ, renvoi la valeur n de InZ n*)
-let eval_expr_for_InZ eval env mem e (src: string) : int  = 
-        match eval env mem e with
+(** evalue l'expression e et leve une erreur si ce n'est pas un InZ, renvoi la valeur n de InZ n et la nouvelle mémoire*)
+let match_value_for_InZ (v: value) (src: string) : int  = 
+        match v with
         | InZ iCond -> iCond
         | _ -> failwith (Printf.sprintf "Expected InZ : %s" src)
 
 let match_value_for_InA: value -> value = function
         | InA a -> InA a
-        | _ -> failwith "Expected and Adress"
+        | _ -> failwith "Expected an InA"
+
+let match_value_for_InBlock (v: value) (src: string) : adress * int = 
+    match v with
+      | InBlock {adr; size} -> adr, size
+      | _ -> failwith (Printf.sprintf "Expected InBlock : %s" src)
  
 

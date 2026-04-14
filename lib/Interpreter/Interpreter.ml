@@ -1,4 +1,4 @@
-(*open Types
+open Types
 open Ast
 module StringMap = Map.Make(String)
 module AdressMap = Map.Make(AdressOrd)
@@ -21,6 +21,10 @@ let alloc (mem: memory): adress * memory =
   let fresh_add = AdressMap.cardinal mem in
   fresh_add, AdressMap.add fresh_add Any mem
 
+let allocn (mem: memory) (size: int): adress * memory = 
+  failwith "TODO"
+
+(***********  MAIN CORE OF EVALUATION ****************************************)
 let rec eval_prog: prog -> memory * output = function
     ASTProg cs -> 
       let mem_res, out_res = eval_block init_env init_memory []  cs in
@@ -132,14 +136,15 @@ and eval_def (env: environement) (mem: memory): def -> environement * memory = f
       ::env,
       mem
 
-and eval_expr (env: environement) (mem: memory): expr -> value = function
+and eval_expr (env: environement) (mem: memory): expr -> value * memory = function
 
     | ASTNum n ->
       (*Note: pour la section 'Fonctions sémantiques utiles' des notes de cours APS0.
       Ici la conversion est faite par le lexer (int_of_string)*)
-        InZ n
-
+        InZ n, mem
+    
     | ASTId x ->
+        (*TODO*)
         let _, v = List.find (fun (id, _) -> id = x) env in
         begin
           match v with 
@@ -159,28 +164,30 @@ and eval_expr (env: environement) (mem: memory): expr -> value = function
         eval_expr env mem e2
       else 
         eval_expr env mem e3
-
+  
     | ASTAnd (e1, e2) ->
       let i1 = Helper.eval_expr_for_InZ eval_expr env mem e1 "And (e1)" in
 
       if i1 = 1 then
         let i2 = Helper.eval_expr_for_InZ eval_expr env mem e2 "And (e2)" in
-        InZ i2
+        InZ i2, mem
       else
-        InZ i1
+        InZ i1, mem
 
     | ASTOr (e1, e2) ->
       let i1 = Helper.eval_expr_for_InZ eval_expr env mem e1 "Or (e1)" in
 
       if i1 = 1 then
-        InZ i1
+        InZ i1, mem
       else
         let i2 = Helper.eval_expr_for_InZ eval_expr env mem e2 "Or (e2)" in
-        InZ i2
+        InZ i2, mem
 
     | ASTApp (ASTId f, es) when StringMap.mem f pi1 || StringMap.mem f pi2 ->
       (*PRIM1 et PRIM2*)
-      (*TODO: regarde c'est quoi la regle PRIM*)
+      (*TODO: regarde c'est quoi la regle PRIM dans APS1a*)
+
+      (*TODO: quelle memoire utiliser*)
       let vs = List.map (eval_expr env mem) es in
       begin match f, vs with
         | "not", [InZ n] ->
@@ -209,5 +216,32 @@ and eval_expr (env: environement) (mem: memory): expr -> value = function
       
 
     | ASTLambda (args, e_body) ->
-        InF(e_body, List.map (function ASTArg (ident, _) -> ident) args, env)    
-*)
+        InF(e_body, List.map (function ASTArg (ident, _) -> ident) args, env), mem 
+        
+    | ASTAlloc e ->
+      let v, mem' = eval_expr env mem e in
+      let n = Helper.match_value_for_InZ v "ASTalloc" in
+      let adr, mem'' = allocn mem' n in
+      InBlock {adr; size=n}, mem''
+
+    | ASTNth (e1, e2) ->
+      let v1, mem' = eval_expr env mem e1 in
+      let adr, size = Helper.match_value_for_InBlock v1 "ASTNth" in
+
+      let v2, mem'' = eval_expr env mem' e2 in
+      let i = Helper.match_value_for_InZ v2 "ASTNth" in
+
+      if(i < size) then 
+        (*TODO: MAP is not with values*)
+        AdressMap.find (adr+i) mem'', mem''
+      else
+        (*NOTE: not specified*)
+        failwith "index out of bounds"
+
+    | ASTLen e ->
+      let v, mem' = eval_expr env mem e in
+      let _, size = Helper.match_value_for_InBlock v "ASTLen" in
+      InZ size, mem'
+
+
+

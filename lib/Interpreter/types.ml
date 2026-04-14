@@ -34,6 +34,7 @@ and value =
   | InA of adress  
   | InP of procedure_closure 
   | InPR of rec_procedure_closure 
+  | InBlock of memory_block
 
 and closure = expr * string list * environement
                     (*nom de la fct, nom de ces params*)
@@ -45,9 +46,10 @@ and rec_procedure_closure = block * string * string list * environement
 
 and adress = int
 
+and memory_block =  {adr : adress; size:int} 
 
 (* Absence de valeur ou bien valeur courante*)
-and memory_value = Any | Current of int
+and memory_value = Any | Current of int | MemoryBlock of memory_block
 
 
 
