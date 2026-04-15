@@ -12,17 +12,31 @@ let pi2 = StringMap.of_list [("eq", fun n1 n2 -> if n1 = n2 then 1 else 0);
                               ("div", fun n1 n2 -> n1 / n2);
                               ]
 let init_env = [("true", InZ 1); ("false", InZ 0)]
-let init_memory = AdressMap.empty
 
-type memory = memory_value AdressMap.t
+(* len est le nombre de valeurs stockées *)
+(* TODO: abstrait le fait que tu utilise un array (avec des accesseurs) *)
+type memory = { memory : memory_value array; len: int }
 
-(** Génère une adresse frèche et la renvoi avec la mémoire dans laquelle on associe cette adresse à Any*)
-let alloc (mem: memory): adress * memory = 
-  let fresh_add = AdressMap.cardinal mem in
-  fresh_add, AdressMap.add fresh_add Any mem
+let init_memory = { memory=Array.make 1024 Any; len=0 } 
 
+(** Allou 'size' cases mémoire, retourne la premiere adresse du bloque alloué.*)
 let allocn (mem: memory) (size: int): adress * memory = 
-  failwith "TODO"
+  
+  let mem = 
+    if ((size + mem.len) <= (Array.length mem.memory)) then 
+      mem
+    else
+      (*FIXME: il se peut que le double ne suffise pas*)
+      (* Array.length new_mem_arr = mem.len * 2*)
+      let new_mem_arr = Array.append mem.memory (Array.make mem.len Any) in
+      { memory=new_mem_arr; len=Array.length new_mem_arr }
+  in
+
+  let fresh_add = mem.len in
+  fresh_add, { mem with len = mem.len+size } 
+
+let alloc (mem: memory): adress * memory = 
+  allocn mem 1
 
 (***********  MAIN CORE OF EVALUATION ****************************************)
 let rec eval_prog: prog -> memory * output = function
@@ -45,70 +59,92 @@ and eval_block (env: environement) (mem: memory) (out: output): block -> memory 
       let env', mem' = eval_def env mem d in
       eval_cmds env' mem' out cmds
 
+and eval_lvalue (env: environement) (mem: memory): lvalue -> adress * memory = function
+    | ASTLvId id -> 
+      let a = Helper.match_value_for_InA (snd (List.find (fun (id',_) -> id'=id) env)) in
+      a, mem
+
+    |ASTLvNth (ASTLvId id, e) -> 
+      let ve, mem' = eval_expr env mem e in
+      let i = Helper.match_value_for_InZ ve "ASTLVNeth(ve)" in
+      let adr, _ = Helper.match_value_for_InBlock (snd (List.find (fun (id',_) -> id'=id) env)) "ASTLvNth" in
+      adr+i, mem'
+
+    |ASTLvNth (lv, e) ->
+      let a1, mem' = eval_lvalue env mem lv in
+      (*NOTE: dans la spec mémoire sous entendu à avoir une value dedans*)  
+      let a2, _ = Helper.match_value_for_MemoryBlock mem.memory.(a1) "ASTLvNth" in
+      let ve, mem'' = eval_expr env mem' e in
+      let i = Helper.match_value_for_InZ ve "ASTLVNth(ve)" in
+      a2+i, mem''
+
 and eval_stat (env: environement) (mem: memory) (out: output): stat ->  memory * output = function
     ASTEcho e -> 
       (* Pattern is exaustif, typer post cond*)
       begin
         match eval_expr env mem e with
-          | InZ i -> mem, i :: out
+          | InZ i, mem -> mem, i :: out
           | _ -> failwith "impossible: expected InZ"
       end
 
-    | ASTSet(id, e) -> 
-        let _, v_add = List.find (fun (x, _) -> id = x) env in
-          begin
-            match v_add with 
-              | InA a -> 
-                  let v = eval_expr env mem e in
-                  begin
-                    match v with 
-                    | InZ n -> AdressMap.add a (Current n) mem, out
-                    |_ -> failwith (Printf.sprintf "Set: expression should evaluate to InZ for id %s " id)
-                  end
-                  
-              | _ -> failwith (Printf.sprintf "Set applied on a constant %s " id)
-          end
-
+    | ASTSet(lv, e) -> 
+        let ve, mem' = eval_expr env mem e in
+        let a, mem'' = eval_lvalue env mem' lv in 
+        
+        begin
+          match ve with 
+          | InZ n -> 
+            mem''.memory.(a) <- Current n;
+            mem'', out
+          | InBlock b ->
+            mem''.memory.(a) <- MemoryBlock b;
+            mem'', out
+          |_ -> failwith (Printf.sprintf "Set: expression should evaluate to InZ or InBlock")
+        end          
+        
     | ASTIfStat(e, bk1, bk2) ->    
-      let cond_i = Helper.eval_expr_for_InZ eval_expr env mem e "IfStat" in
+      let v, mem' = eval_expr env mem e in
+      let cond_i = Helper.match_value_for_InZ v "ASTIfStat" in
 
       if cond_i = 1 then 
-        eval_block env mem out bk1
+        eval_block env mem' out bk1
       else 
-        eval_block env mem out bk2
+        eval_block env mem' out bk2
   
     | ASTWhile(e, bk) -> 
-      let cond_i = Helper.eval_expr_for_InZ eval_expr env mem e "While" in
+      let v, mem' = eval_expr env mem e in
+      let cond_i = Helper.match_value_for_InZ v "While" in
 
       if cond_i = 1 then 
-        let mem', out' = eval_block env mem out bk in
+        let mem'', out' = eval_block env mem' out bk in
         (* effet de bord est attendu sur e pour que la boucle termine*)
-        eval_stat env mem' out' (ASTWhile(e, bk))
-      else mem, out
+        eval_stat env mem'' out' (ASTWhile(e, bk))
+      else mem', out
 
     | ASTCall(e, es) -> 
-            (*APP et APPR*)
-      let vp = eval_expr env mem e in
-      let vs = List.map (eval_exprP env mem) es in
+      (*APP et APPR*)
+      (*TODO*)
+      let vp, mem' = eval_expr env mem e in
+      let new_mem, vs = Helper.eval_es (eval_exprP env) mem' es in
       begin match vp with
         | InP (bk, params, env') ->
-            eval_block (Helper.bind env' params vs) mem out bk
+            eval_block (Helper.bind env' params vs) new_mem out bk
 
         | InPR (bk, p_name, params, env') as self ->
-            eval_block ((p_name, self) :: Helper.bind env' params vs) mem out bk
+            eval_block ((p_name, self) :: Helper.bind env' params vs) new_mem out bk
 
         | _ ->
             failwith "app on a non fonctionnel value"
       end
 
-and eval_exprP (env: environement) (mem: memory): exprP -> value = function
+and eval_exprP (env: environement) (mem: memory): exprP -> value * memory = function
   | ASTexpr e -> eval_expr env mem e
-  | ASTAdr id -> Helper.match_value_for_InA (snd (List.find (fun (id', _) -> id = id') env))
+  | ASTAdr id -> Helper.match_value_for_InA_v (snd (List.find (fun (id', _) -> id = id') env)), mem
 
       
 and eval_def (env: environement) (mem: memory): def -> environement * memory = function
     ASTConst (id, _, e) ->
-        let v = eval_expr env mem e in
+        let v, mem = eval_expr env mem e in
         ((id, v)::env), mem
 
     |ASTFun (id, _, args, e_body) ->
@@ -144,21 +180,22 @@ and eval_expr (env: environement) (mem: memory): expr -> value * memory = functi
         InZ n, mem
     
     | ASTId x ->
-        (*TODO*)
         let _, v = List.find (fun (id, _) -> id = x) env in
         begin
           match v with 
             | InA a -> 
               begin
-                match AdressMap.find a mem with 
-                  | Current n -> InZ n
+                match mem.memory.(a) with 
+                  | Current n -> InZ n, mem
+                  | MemoryBlock b -> InBlock b, mem
                   | Any -> failwith "Acces of non initialized memory"
               end
-            | _ -> v
+            | _ -> v, mem
         end
         
     | ASTIf (e1, e2, e3) ->
-      let cond_i = Helper.eval_expr_for_InZ eval_expr env mem e1 "functionnal if" in
+      let v, mem = eval_expr env mem e1 in
+      let cond_i = Helper.match_value_for_InZ v "functionnal if" in
 
       if cond_i = 1 then 
         eval_expr env mem e2
@@ -166,34 +203,38 @@ and eval_expr (env: environement) (mem: memory): expr -> value * memory = functi
         eval_expr env mem e3
   
     | ASTAnd (e1, e2) ->
-      let i1 = Helper.eval_expr_for_InZ eval_expr env mem e1 "And (e1)" in
+      let v1, mem' = eval_expr env mem e1 in
+      let i1 = Helper.match_value_for_InZ v1 "And (e1)" in
 
       if i1 = 1 then
-        let i2 = Helper.eval_expr_for_InZ eval_expr env mem e2 "And (e2)" in
-        InZ i2, mem
+        let v2, mem'' = eval_expr env mem' e2 in
+        let i2 = Helper.match_value_for_InZ v2 "And (e2)" in
+        InZ i2, mem''
       else
-        InZ i1, mem
+        InZ i1, mem'
 
     | ASTOr (e1, e2) ->
-      let i1 = Helper.eval_expr_for_InZ eval_expr env mem e1 "Or (e1)" in
+      let v1, mem' = eval_expr env mem e1 in
+      let i1 = Helper.match_value_for_InZ v1 "Or (e1)" in
 
       if i1 = 1 then
-        InZ i1, mem
+        InZ i1, mem'
       else
-        let i2 = Helper.eval_expr_for_InZ eval_expr env mem e2 "Or (e2)" in
-        InZ i2, mem
+        let v2, mem'' = eval_expr env mem e2 in
+        let i2 = Helper.match_value_for_InZ v2 "Or (e2)" in
+        InZ i2, mem''
 
     | ASTApp (ASTId f, es) when StringMap.mem f pi1 || StringMap.mem f pi2 ->
       (*PRIM1 et PRIM2*)
       (*TODO: regarde c'est quoi la regle PRIM dans APS1a*)
 
-      (*TODO: quelle memoire utiliser*)
-      let vs = List.map (eval_expr env mem) es in
+      let new_mem, vs = Helper.eval_es (eval_expr env) mem es in
+
       begin match f, vs with
         | "not", [InZ n] ->
-            InZ ((StringMap.find f pi1) n)
+            InZ ((StringMap.find f pi1) n), new_mem
         | ("eq" | "lt" | "add" | "sub" | "mul" | "div"), [InZ n1; InZ n2] ->
-            InZ ((StringMap.find f pi2) n1 n2)
+            InZ ((StringMap.find f pi2) n1 n2), new_mem
         | _ ->
             let l = List.map (fun v -> Printf.sprintf "%s" (Helper.string_of_value v) ) vs in
             failwith (Printf.sprintf "primitive : %s applied erroneously on : %s" f (String.concat " " l))
@@ -201,14 +242,15 @@ and eval_expr (env: environement) (mem: memory): expr -> value * memory = functi
 
     | ASTApp (e, es) ->
       (*APP et APPR*)
-      let vf = eval_expr env mem e in
-      let vs = List.map (eval_expr env mem) es in
+      let vf, mem' = eval_expr env mem e in
+      let new_mem, vs = Helper.eval_es (eval_expr env) mem' es in
+
       begin match vf with
       | InF (e_body, params, env') ->
-          eval_expr (Helper.bind env' params vs) mem e_body
+          eval_expr (Helper.bind env' params vs) new_mem e_body
 
       | InFR (e_body, f_name, params, env') as self ->
-          eval_expr ((f_name, self) :: Helper.bind env' params vs) mem e_body
+          eval_expr ((f_name, self) :: Helper.bind env' params vs) new_mem e_body
 
       | _ ->
           failwith "app on a non fonctionnel value"
@@ -226,14 +268,20 @@ and eval_expr (env: environement) (mem: memory): expr -> value * memory = functi
 
     | ASTNth (e1, e2) ->
       let v1, mem' = eval_expr env mem e1 in
-      let adr, size = Helper.match_value_for_InBlock v1 "ASTNth" in
+      let adr, size = Helper.match_value_for_InBlock v1 "ASTNth(e1)" in
 
       let v2, mem'' = eval_expr env mem' e2 in
-      let i = Helper.match_value_for_InZ v2 "ASTNth" in
+      let i = Helper.match_value_for_InZ v2 "ASTNth(e2)" in
 
       if(i < size) then 
-        (*TODO: MAP is not with values*)
-        AdressMap.find (adr+i) mem'', mem''
+        (*NOTE: MAP is not with values (spec said ohterwise)*)
+        begin 
+          match mem.memory.(adr+i) with
+            | Current n -> InZ n
+            | MemoryBlock memory_block -> InBlock memory_block
+            | Any -> failwith"ASTNth: non init memory"  
+        end
+        , mem''
       else
         (*NOTE: not specified*)
         failwith "index out of bounds"
@@ -242,6 +290,22 @@ and eval_expr (env: environement) (mem: memory): expr -> value * memory = functi
       let v, mem' = eval_expr env mem e in
       let _, size = Helper.match_value_for_InBlock v "ASTLen" in
       InZ size, mem'
+
+    |ASTVset (e1, e2, e3) ->
+      let v1, mem' = eval_expr env mem e1 in
+      let _, _ = Helper.match_value_for_InBlock v1 "ASTVset(e1)" in
+
+      let v2, mem'' = eval_expr env mem' e2 in
+      let _ = Helper.match_value_for_InZ v2 "ASTVset(e2)" in
+
+      let v3, mem''' = eval_expr env mem'' e3 in
+      v3, mem'''
+      (* FIXME NOTE: dans la spec on affecte directement v3 à la mémoire alors qu'on accepte pas tout
+      mem.memory.(a+i) <- 
+      (InBlock {adr = a; size})
+
+      *)
+
 
 
 

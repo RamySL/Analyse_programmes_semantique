@@ -13,6 +13,7 @@ and string_of_value (v: value) =
     | InZ n -> Printf.sprintf "InZ(%d)" n 
     | InF c -> Printf.sprintf "InF(%s)" (string_of_closure c)
     |InFR rc ->Printf.sprintf "InFR(%s)" (string_of_rec_closure rc)
+    |_ -> failwith "TODO: complete"
 
 and string_of_closure (c:closure) = 
   let (_, args, env) = c in
@@ -43,17 +44,35 @@ let bind (env:environement) params vs : environement =
 
 (** evalue l'expression e et leve une erreur si ce n'est pas un InZ, renvoi la valeur n de InZ n et la nouvelle mémoire*)
 let match_value_for_InZ (v: value) (src: string) : int  = 
-        match v with
-        | InZ iCond -> iCond
-        | _ -> failwith (Printf.sprintf "Expected InZ : %s" src)
+    match v with
+    | InZ n -> n
+    | _ -> failwith (Printf.sprintf "Expected InZ : %s" src)
 
-let match_value_for_InA: value -> value = function
-        | InA a -> InA a
-        | _ -> failwith "Expected an InA"
+let match_value_for_InA_v: value -> value = function
+    | InA a -> InA a
+    | _ -> failwith "Expected an InA"
+
+let match_value_for_InA: value -> adress = function
+    | InA a -> a
+    | _ -> failwith "Expected an InA"
 
 let match_value_for_InBlock (v: value) (src: string) : adress * int = 
     match v with
       | InBlock {adr; size} -> adr, size
       | _ -> failwith (Printf.sprintf "Expected InBlock : %s" src)
+
+let match_value_for_MemoryBlock (v: memory_value) (src: string) : adress * int = 
+    match v with
+      | MemoryBlock {adr; size} -> adr, size
+      | _ -> failwith (Printf.sprintf "Expected InBlock : %s" src)
+
+
+(* chaque evaluation d'argument produit une nouvelle mémoire qu'il fait propager*)
+let eval_es eval mem es = 
+  List.fold_right (
+        fun e (curr_mem,vs) ->  
+          let v, mem = eval curr_mem e in
+          mem, v::vs
+        ) es (mem, [])
  
 
