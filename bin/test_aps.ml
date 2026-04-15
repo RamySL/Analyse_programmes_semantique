@@ -40,6 +40,15 @@ let l_test_2 = [
   (testfile_name 2 3, "OK", []);
 ]
 
+(* Map entre la version d'aps et sa suite de tests*)
+module IMap = Map.Make(Int)
+let version_test_suit = IMap.of_list 
+  [
+    (0, l_test_0);
+    (1, l_test_1);
+    (2, l_test_2);
+  ]
+
 (** Exécute le pipeline complet sur un fichier :
     1) parsing
     2) génération du terme Prolog
@@ -88,14 +97,17 @@ let test_pipeline (l_test : (string * string * int list) list) =
 
 let get_filenames l_test = List.map (fun (f, _, _) -> f) l_test
 
-(* TODO: mettre en param le choix de quelle suite de test lancer*)
-let _ =
-  
-  (*Format.printf "========== Tests de APS 0 ==========\n";
-  test_pipeline l_test_0;*)
-  
-  Format.printf "========== Tests de APS 1 ==========\n";
-  test_pipeline l_test_1; 
+(** Lance la suite de tests correspendante à aps-version*)
+let lunch aps_version = 
+    Format.printf "\n********* Tests de APS %d ***********\n" aps_version;
+    test_pipeline (IMap.find aps_version version_test_suit)
 
-  (*Format.printf "========== Tests de APS 2 ==========\n";
-  test_pipeline l_test_2*)
+let _ =
+  (* None pour lancer les tests de toutes les versions *)
+  let test_number = None in
+
+  match test_number with
+    | Some i -> lunch i;
+    (* Si rien n'est précisé on lance tout*)
+    | None ->
+      IMap.iter (fun version _ -> lunch version ) version_test_suit
