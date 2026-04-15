@@ -34,10 +34,10 @@ let l_test_1 = [
 ]
 
 let l_test_2 = [
-  (testfile_name 2 0, "OK", []);
-  (testfile_name 2 1, "OK", []);
-  (testfile_name 2 2, "OK", []);
-  (testfile_name 2 3, "OK", []);
+  (testfile_name 2 0, "OK", [5]);
+  (testfile_name 2 1, "OK", [10; 20]);
+  (testfile_name 2 2, "OK", [42; 84]);
+  (testfile_name 2 3, "OK", [10;11;12;13;14]);
 ]
 
 (* Map entre la version d'aps et sa suite de tests*)
@@ -95,16 +95,15 @@ let test_pipeline (l_test : (string * string * int list) list) =
     run_one_file fname expected_typ expected_eval
   ) l_test
 
-let get_filenames l_test = List.map (fun (f, _, _) -> f) l_test
 
 (** Lance la suite de tests correspendante à aps-version*)
 let lunch aps_version = 
-    Format.printf "\n********* Tests de APS %d ***********\n" aps_version;
+    Format.printf "\n********* Tests de APS %d ***********  \n" aps_version;
     test_pipeline (IMap.find aps_version version_test_suit)
 
 let _ =
   (* None pour lancer les tests de toutes les versions *)
-  let test_number = None in
+  let test_number = Some 2 in
 
   match test_number with
     | Some i -> lunch i;

@@ -74,7 +74,6 @@ _type:
 | VOID                          { ASTVoid }
 | LPAR ts=separated_list(STAR, _type) ARROW rt=_type RPAR { ASTFunT(ts, rt) }
 | LPAR VEC ty=_type RPAR        { ASTVec(ty) }
-
 ;
 
 

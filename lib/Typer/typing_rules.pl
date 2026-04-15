@@ -81,6 +81,7 @@ mem(ELT, [_ | TAIL]) :- mem(ELT, TAIL).
 /** test si le type donné est un type valide du langage */
 is_type(T) :- mem(T, [int, bool, void, vec(_), ([_|_], _)]). /* le dernier est censé représenté les fcts */
 
+is_memory_type(T) :- mem(T, [int, vec(_)]).
 
 /* Prog */
 type_prog(prog(P), void) :- 
@@ -107,6 +108,7 @@ type_def(G, fun_rec(F, T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G]) 
     type_expr([(F, (T_PARAMS, T_RET)) | G_EVAL], BODY, T_RET).
 
 /* Note: besoin de rajouter cette règle pour empecher la création des ref(vec(T)), pcq par construction vec est mutable */
+/* FIXME: T peut etre que int ou bool */
 type_def(G, var(ID, vec(T)), [(ID, vec(T)) | G]). 
 type_def(G, var(ID, T), [(ID, ref(T)) | G]).
 
@@ -199,11 +201,15 @@ type_expr(G, len(E), int) :-
     type_expr(G, E, vec(T)),
     is_type(T).
 
+/* NOTE: mentionné dans la spec mais obligé de contraindre E3 qu'à etre de int, ou de block 
+    pour permettre qu'il soit mis en mémoire */
+
 type_expr(G, vset(E1, E2, E3), vec(T)) :- 
     type_expr(G, E1, vec(T)),
     is_type(T), 
     type_expr(G, E2, int),
-    type_expr(G, E3, T).
+    type_expr(G, E3, T),
+    is_memory_type(T).
 
 
 

@@ -67,13 +67,13 @@ and eval_lvalue (env: environement) (mem: memory): lvalue -> adress * memory = f
     |ASTLvNth (ASTLvId id, e) -> 
       let ve, mem' = eval_expr env mem e in
       let i = Helper.match_value_for_InZ ve "ASTLVNeth(ve)" in
-      let adr, _ = Helper.match_value_for_InBlock (snd (List.find (fun (id',_) -> id'=id) env)) "ASTLvNth" in
+      let adr, _ = Helper.match_value_for_InBlock (snd (List.find (fun (id',_) -> id'=id) env)) "ASTLvNth(lv id)" in
       adr+i, mem'
 
     |ASTLvNth (lv, e) ->
       let a1, mem' = eval_lvalue env mem lv in
       (*NOTE: dans la spec mémoire sous entendu à avoir une value dedans*)  
-      let a2, _ = Helper.match_value_for_MemoryBlock mem.memory.(a1) "ASTLvNth" in
+      let a2, _ = Helper.match_value_for_MemoryBlock mem.memory.(a1) "ASTLvNth(lv)" in
       let ve, mem'' = eval_expr env mem' e in
       let i = Helper.match_value_for_InZ ve "ASTLVNth(ve)" in
       a2+i, mem''
@@ -123,7 +123,6 @@ and eval_stat (env: environement) (mem: memory) (out: output): stat ->  memory *
 
     | ASTCall(e, es) -> 
       (*APP et APPR*)
-      (*TODO*)
       let vp, mem' = eval_expr env mem e in
       let new_mem, vs = Helper.eval_es (eval_exprP env) mem' es in
       begin match vp with
@@ -293,18 +292,19 @@ and eval_expr (env: environement) (mem: memory): expr -> value * memory = functi
 
     |ASTVset (e1, e2, e3) ->
       let v1, mem' = eval_expr env mem e1 in
-      let _, _ = Helper.match_value_for_InBlock v1 "ASTVset(e1)" in
+      let a, size = Helper.match_value_for_InBlock v1 "ASTVset(e1)" in
 
       let v2, mem'' = eval_expr env mem' e2 in
-      let _ = Helper.match_value_for_InZ v2 "ASTVset(e2)" in
+      let i = Helper.match_value_for_InZ v2 "ASTVset(e2)" in
 
       let v3, mem''' = eval_expr env mem'' e3 in
-      v3, mem'''
-      (* FIXME NOTE: dans la spec on affecte directement v3 à la mémoire alors qu'on accepte pas tout
-      mem.memory.(a+i) <- 
-      (InBlock {adr = a; size})
+      (* FIXME NOTE: dans la spec on affecte directement v3 à la mémoire alors qu'on accepte pas tout *)
+      let memory_v3 = Helper.match_value_for_mem_value v3 "ASTVset" in
+      
+      mem'''.memory.(a+i) <- memory_v3;
+      (InBlock {adr = a; size}, mem''')
 
-      *)
+      
 
 
 

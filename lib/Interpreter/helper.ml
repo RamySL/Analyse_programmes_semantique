@@ -66,6 +66,11 @@ let match_value_for_MemoryBlock (v: memory_value) (src: string) : adress * int =
       | MemoryBlock {adr; size} -> adr, size
       | _ -> failwith (Printf.sprintf "Expected InBlock : %s" src)
 
+let match_value_for_mem_value (v: value) (src:string): memory_value =
+  match v with 
+    |InZ i -> Current i
+    |InBlock b -> MemoryBlock b
+    | _ -> failwith (Printf.sprintf "Expected Inz or Inblock to put in memory : %s" src)
 
 (* chaque evaluation d'argument produit une nouvelle mémoire qu'il fait propager*)
 let eval_es eval mem es = 

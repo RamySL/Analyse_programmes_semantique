@@ -1,0 +1,6 @@
+- on peut déclarer un tableau avec CONST !!!
+- /* FIXME: T peut etre que int ou bool */
+type_def(G, var(ID, vec(T)), [(ID, vec(T)) | G]). 
+
+- Rajoute dans le typeur une contraibe correctVcet pour contraindre la construction de vecteur 
+de cloture par exemple, tu la met dans alloc, dans CONST
