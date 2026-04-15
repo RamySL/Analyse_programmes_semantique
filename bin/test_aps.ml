@@ -1,108 +1,101 @@
 open Aps_syntax.Manip_sys
 open Aps_syntax.PrologTerm
 open Aps_syntax.Interpreter
+
 let l_test_0 = [
-  (testfile_name 0 0, "OK");
-  (testfile_name 0 1, "KO");
-  (testfile_name 0 2, "KO");
-  (testfile_name 0 3, "KO");
-  (testfile_name 0 4, "OK");
-  (testfile_name 0 5, "OK");
-  (testfile_name 0 6, "OK");
-  (testfile_name 0 7, "OK")
+  (testfile_name 0 0, "OK", [11]);
+  (testfile_name 0 1, "KO", []);
+  (testfile_name 0 2, "KO", []);
+  (testfile_name 0 3, "KO", []);
+  (testfile_name 0 4, "OK", [1]);
+  (testfile_name 0 5, "OK", [45]);
+  (testfile_name 0 6, "OK", [25]);
+  (testfile_name 0 7, "OK", [54])
 ]
 
 let l_test_1 = [
-  (testfile_name 1 0, "OK");
-  (testfile_name 1 1, "OK");
-  (testfile_name 1 2, "OK");
-  (testfile_name 1 3, "OK");
-  (testfile_name 1 4, "OK");
-  (testfile_name 1 5, "OK");
-  (testfile_name 1 6, "OK");
-  (testfile_name 1 7, "OK");
-  (testfile_name 1 8, "OK");
-  (testfile_name 1 9, "OK");
+  (testfile_name 1 0, "OK", [3]);
+  (testfile_name 1 1, "OK", [7]);
+  (testfile_name 1 2, "OK", [1]);
+  (testfile_name 1 3, "OK", [9]);
+  (testfile_name 1 4, "OK", [2]);
+  (testfile_name 1 5, "OK", [5;8]);
+  (testfile_name 1 6, "OK", [1]);
+  (testfile_name 1 7, "OK", [1;2;3;4;5]);
+  (testfile_name 1 8, "OK", [42]);
+  (testfile_name 1 9, "OK", [52]);
   (*1a*)
-  (testfile_name 1 10, "KO"); (* Set sur Const*)
-  (testfile_name 1 11, "OK");
-  (testfile_name 1 12, "KO"); (* Constante mais décllarée comme var dans la la signature*)
-  (testfile_name 1 13, "KO"); (* Manque le var dans la signature*)
+  (testfile_name 1 10, "KO", []); (* Set sur Const*)
+  (testfile_name 1 11, "OK", [5]);
+  (testfile_name 1 12, "KO", []); (* Constante mais déclarée comme var dans la signature*)
+  (testfile_name 1 13, "KO", []); (* Manque le var dans la signature*)
   (* TODO: ici ya pas d'erreur parceque VAR x int introduit déja x avec ref(int) donc l'absence de (adr x) ne pose pas de pb*)
-  (testfile_name 1 14, "KO"); (* CALL sans adr pour l'argument*)
-  
+  (testfile_name 1 14, "KO", []); (* CALL sans adr pour l'argument*)
 ]
 
 let l_test_2 = [
-  (testfile_name 2 0, "OK");
-  (testfile_name 2 1, "OK");
-  (testfile_name 2 2, "OK");
-  (testfile_name 2 3, "OK");
+  (testfile_name 2 0, "OK", []);
+  (testfile_name 2 1, "OK", []);
+  (testfile_name 2 2, "OK", []);
+  (testfile_name 2 3, "OK", []);
 ]
-
-(** Affiche pour chaque fichier la représentation Prolog du programme parsé *)
-let test_prologTerm (l_test : string list) =
-  List.iter
-    (fun fname ->
-      let p = get_prog fname in
-      Format.printf "%s |\t %a\n" fname pp_prog p
-    )
-    l_test
-
 
 (** Exécute le pipeline complet sur un fichier :
     1) parsing
     2) génération du terme Prolog
     3) appel du typeur
-    4) si le typage réussit, exécution de l'interprète
+    4) si le typage réussit, exécution de l'interprète et comparaison avec l'évaluation attendue
     5) sinon, on n'exécute pas le programme *)
-let run_one_file (fname : string) (expected : string) =
+let run_one_file (fname : string) (expected_typ : string) (expected_eval : int list) =
   let p = get_prog fname in
   pp_prog Format.str_formatter p;
   let s = Format.flush_str_formatter () in
 
-  
-
   match cmd_typ s with
   | Ok (res, _) ->
-      let imoji = if (res = expected) then "✅" else "❌" in
-      Format.printf "\n===== %s ===== | Attendu match le typage : %s \n" fname imoji;
+      let res_trim = String.trim res in
+      let typing_imoji = if (res_trim = expected_typ) then "✅" else "❌" in
 
-      let res = String.trim res in
-      Format.printf "Typeur      : %s\n" res;
-      Format.printf "Attendu     : %s\n" expected;
+      Format.printf "\n===== %s =====\n" fname;
+      Format.printf "Typage  : %s\n" typing_imoji;
+      Format.printf "Typeur  : %s\n" res_trim;
+      Format.printf "Attendu : %s\n" expected_typ;
 
-      if res = "OK" then begin
-        Format.printf "Execution   : OK\n";
-        List.iter (fun i -> Format.printf "%d\n" i) (snd(eval_prog p))
+      if res_trim = "OK" then begin
+        let actual_eval = snd(eval_prog p) in
+        
+        let str_expected_eval = "[" ^ String.concat "; " (List.map string_of_int expected_eval) ^ "]" in
+        let str_actual_eval = "[" ^ String.concat "; " (List.map string_of_int actual_eval) ^ "]" in
+        
+        let eval_imoji = if actual_eval = expected_eval then "✅" else "❌" in
+        Format.printf "\nEvaluation : %s\n" eval_imoji;
+        Format.printf "Evaluation attendu: %s\n" str_expected_eval;
+        Format.printf "Evaluation obtenu : %s\n" str_actual_eval;
+
       end else begin
-        Format.printf "Execution   : non lancee (erreur de type)\n"
+        Format.printf "Evaluation : non lancee (erreur de type ou programme KO attendu)\n"
       end
 
   | Error (`Msg m) ->
       Format.printf "Erreur typeur/systeme : %s\n" m;
-      Format.printf "Execution   : non lancee\n"
+      Format.printf "Evaluation : non lancee\n"
 
-let test_pipeline (l_test : (string * string) list) =
-  List.iter (fun (fname, expected) -> run_one_file fname expected) l_test
+(* Lance le pipeline sur une liste de fichiers*)
+let test_pipeline (l_test : (string * string * int list) list) =
+  List.iter (fun (fname, expected_typ, expected_eval) -> 
+    run_one_file fname expected_typ expected_eval
+  ) l_test
+
+let get_filenames l_test = List.map (fun (f, _, _) -> f) l_test
 
 (* TODO: mettre en param le choix de quelle suite de test lancer*)
 let _ =
   
   (*Format.printf "========== Tests de APS 0 ==========\n";
-  Format.printf "- Test de PrologTerm\n";
-  test_prologTerm (List.map fst l_test_0);
-  Format.printf "\n- Pipeline complet : typage puis execution\n";
-  test_pipeline l_test_0;
+  test_pipeline l_test_0;*)
   
   Format.printf "========== Tests de APS 1 ==========\n";
-  Format.printf "- Test de PrologTerm\n";
-  test_prologTerm (List.map fst l_test_1);
-  Format.printf "\n- Pipeline complet : typage puis execution\n";
-  test_pipeline l_test_1; *)
+  test_pipeline l_test_1; 
 
-  Format.printf "========== Tests de APS 2 ==========\n";
-  Format.printf "- Test de PrologTerm\n";
-  test_prologTerm (List.map fst l_test_2);
-  Format.printf "\n- Pipeline complet : typage puis execution\n";
-  test_pipeline l_test_2
+  (*Format.printf "========== Tests de APS 2 ==========\n";
+  test_pipeline l_test_2*)
