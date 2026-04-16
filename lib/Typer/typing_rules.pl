@@ -83,6 +83,8 @@ is_type(T) :- mem(T, [int, bool, void, vec(_), ([_|_], _)]). /* le dernier est c
 
 is_memory_type(T) :- mem(T, [int, vec(_)]).
 
+correct_var_types(T) :- mem(T, [int, bool]). 
+
 /* Prog */
 type_prog(prog(P), void) :- 
     context_init(G0),
@@ -109,8 +111,7 @@ type_def(G, fun_rec(F, T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G]) 
 
 /* Note: besoin de rajouter cette règle pour empecher la création des ref(vec(T)), pcq par construction vec est mutable */
 /* FIXME: T peut etre que int ou bool */
-type_def(G, var(ID, vec(T)), [(ID, vec(T)) | G]). 
-type_def(G, var(ID, T), [(ID, ref(T)) | G]).
+type_def(G, var(ID, T), [(ID, ref(T)) | G]) :- correct_var_types(T).
 
 type_def(G, proc(P, ID_T_PARAMS, BODY), [(P, (T_PARAMS, void)) | G]) :- 
     extract_id_var(ID_T_PARAMS, EXTRACTED_VAR),

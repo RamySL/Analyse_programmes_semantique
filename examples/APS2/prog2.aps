@@ -1,6 +1,5 @@
 [
-  VAR v (vec int);
-  SET v (alloc 2);
+  CONST v (vec int) (alloc 2);
   SET (nth v 0) 42;
   SET (nth v 1) 84;
   ECHO (nth v 0);

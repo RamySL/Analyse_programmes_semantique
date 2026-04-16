@@ -1,6 +1,5 @@
 [
   CONST n int 5;
-  VAR v (vec int);
-  SET v (alloc n);
+  CONST v (vec int) (alloc n);
   ECHO (len v)
 ]

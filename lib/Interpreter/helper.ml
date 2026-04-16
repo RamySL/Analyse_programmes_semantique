@@ -13,7 +13,11 @@ and string_of_value (v: value) =
     | InZ n -> Printf.sprintf "InZ(%d)" n 
     | InF c -> Printf.sprintf "InF(%s)" (string_of_closure c)
     |InFR rc ->Printf.sprintf "InFR(%s)" (string_of_rec_closure rc)
-    |_ -> failwith "TODO: complete"
+    (*TODO: complete*)
+    |InP _-> Printf.sprintf "InP"
+    |InPR _-> Printf.sprintf "InPR"
+    |InBlock _-> Printf.sprintf "InBlock"
+    |InA _-> Printf.sprintf "Ina"
 
 and string_of_closure (c:closure) = 
   let (_, args, env) = c in

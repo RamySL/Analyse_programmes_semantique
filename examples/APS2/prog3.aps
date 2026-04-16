@@ -1,7 +1,6 @@
 [
-  VAR v (vec int);
+  CONST v (vec int) (alloc 5);
   VAR i int;
-  SET v (alloc 5);
   SET i 0;
 
   WHILE (lt i (len v)) [
