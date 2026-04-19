@@ -1,53 +1,7 @@
 open Aps_syntax.Manip_sys
 open Aps_syntax.PrologTerm
 open Aps_syntax.Interpreter
-
-let l_test_0 = [
-  (testfile_name 0 0, "OK", [11]);
-  (testfile_name 0 1, "KO", []);
-  (testfile_name 0 2, "KO", []);
-  (testfile_name 0 3, "KO", []);
-  (testfile_name 0 4, "OK", [1]);
-  (testfile_name 0 5, "OK", [45]);
-  (testfile_name 0 6, "OK", [25]);
-  (testfile_name 0 7, "OK", [54])
-]
-
-let l_test_1 = [
-  (testfile_name 1 0, "OK", [3]);
-  (testfile_name 1 1, "OK", [7]);
-  (testfile_name 1 2, "OK", [1]);
-  (testfile_name 1 3, "OK", [9]);
-  (testfile_name 1 4, "OK", [2]);
-  (testfile_name 1 5, "OK", [5;8]);
-  (testfile_name 1 6, "OK", [1]);
-  (testfile_name 1 7, "OK", [1;2;3;4;5]);
-  (testfile_name 1 8, "OK", [42]);
-  (testfile_name 1 9, "OK", [52]);
-  (*1a*)
-  (testfile_name 1 10, "KO", []); (* Set sur Const*)
-  (testfile_name 1 11, "OK", [5]);
-  (testfile_name 1 12, "KO", []); (* Constante mais déclarée comme var dans la signature*)
-  (testfile_name 1 13, "KO", []); (* Manque le var dans la signature*)
-  (* TODO: ici ya pas d'erreur parceque VAR x int introduit déja x avec ref(int) donc l'absence de (adr x) ne pose pas de pb*)
-  (testfile_name 1 14, "KO", []); (* CALL sans adr pour l'argument*)
-]
-
-let l_test_2 = [
-  (testfile_name 2 0, "OK", [5]);
-  (testfile_name 2 1, "OK", [10; 20]);
-  (testfile_name 2 2, "OK", [42; 84]);
-  (testfile_name 2 3, "OK", [10;11;12;13;14]);
-]
-
-(* Map entre la version d'aps et sa suite de tests*)
-module IMap = Map.Make(Int)
-let version_test_suit = IMap.of_list 
-  [
-    (0, l_test_0);
-    (1, l_test_1);
-    (2, l_test_2);
-  ]
+open Aps_syntax.Tests_helper
 
 (** Exécute le pipeline complet sur un fichier :
     1) parsing
@@ -98,15 +52,15 @@ let test_pipeline (l_test : (string * string * int list) list) =
 
 (** Lance la suite de tests correspendante à aps-version*)
 let lunch aps_version = 
-    Format.printf "\n********* Tests de APS %d ***********  \n" aps_version;
-    test_pipeline (IMap.find aps_version version_test_suit)
+    Format.printf "\n********* Tests de APS %s ***********  \n" aps_version;
+    test_pipeline (SMap.find aps_version version_test_suit)
 
 let _ =
   (* None pour lancer les tests de toutes les versions *)
-  let test_number = Some 2 in
+  let test_number = Some "1a" in
 
   match test_number with
     | Some i -> lunch i;
     (* Si rien n'est précisé on lance tout*)
     | None ->
-      IMap.iter (fun version _ -> lunch version ) version_test_suit
+      SMap.iter (fun version _ -> lunch version ) version_test_suit

@@ -137,10 +137,9 @@ type_expr(G, len(E), int) :-
 
 type_expr(G, vset(E1, E2, E3), vec(T)) :- 
     type_expr(G, E1, vec(T)),
-    is_type(T), 
+    correct_alloc_type(T),
     type_expr(G, E2, int),
-    type_expr(G, E3, T),
-    is_memory_type(T).
+    type_expr(G, E3, T).
 
 /* Expressions d'arguments APS1a */
 type_exprP(G, adr(id(X)), ref(T)) :- find(G, X, ref(T)).

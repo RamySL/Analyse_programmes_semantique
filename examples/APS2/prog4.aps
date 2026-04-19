@@ -1,0 +1,7 @@
+[
+CONST outer (vec (vec int)) (alloc 1);
+CONST inner (vec int) (alloc 2);
+SET (nth outer 0) inner;
+SET (nth (nth outer 0) 1) 33;
+ECHO (nth (nth outer 0) 1)
+]

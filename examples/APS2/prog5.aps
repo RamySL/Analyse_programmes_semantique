@@ -1,0 +1,5 @@
+[
+CONST vb (vec bool) (alloc 1);
+SET (nth vb 0) true;
+ECHO (if (nth vb 0) 1 0)
+]

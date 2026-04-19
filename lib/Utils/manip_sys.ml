@@ -1,7 +1,6 @@
 open Bos
 
-
-let testfile_name ver i = Printf.sprintf "examples/APS%d/prog%d.aps" ver i
+let testfile_name ver i = Printf.sprintf "examples/APS%s/prog%d.aps" ver i
 
 let typ_path = "lib/Typer/typing_rules.pl"
 

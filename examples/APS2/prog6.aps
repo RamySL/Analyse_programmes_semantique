@@ -1,0 +1,8 @@
+[
+PROC fill [v:(vec int)] [
+  SET (nth v 0) 99
+];
+CONST a (vec int) (alloc 1);
+CALL fill a;
+ECHO (nth a 0)
+]
