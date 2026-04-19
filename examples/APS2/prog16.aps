@@ -1,0 +1,9 @@
+[
+CONST a (vec int) (alloc 1500);
+CONST b (vec int) (alloc 5000);
+CONST c (vec int) (alloc 20000);
+SET (nth a 999) 1;
+SET (nth b 4999) 2;
+SET (nth c 19999) 3;
+ECHO (add (nth a 999) (add (nth b 4999) (nth c 19999)))
+]

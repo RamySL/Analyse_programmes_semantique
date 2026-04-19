@@ -53,6 +53,8 @@ let l_test_2 = [
   (Manip_sys.testfile_name "2" 14, "OK", None); (* acces a un tableau vide *)
 
   (Manip_sys.testfile_name "2" 15, "KO", None); (* tableau de fonctions *)
+
+  (Manip_sys.testfile_name "2" 16, "OK", Some [6]); (* test d'allocn dans interpreter.ml*)
 ]
 
 module SMap = Map.Make(String)

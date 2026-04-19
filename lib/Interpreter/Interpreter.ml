@@ -19,22 +19,27 @@ type memory = { memory : memory_value array; len: int }
 let init_memory = { memory=Array.make 1024 Any; len=0 } 
 
 (** Allou 'size' cases mémoire, retourne la premiere adresse du bloque alloué.*)
-let allocn (mem: memory) (size: int): adress * memory = 
-  
-  let mem = 
-    if ((size + mem.len) <= (Array.length mem.memory)) then 
-      mem
-    else
-      (*FIXME: il se peut que le double ne suffise pas*)
-      (* Array.length new_mem_arr = mem.len * 2*)
-      let new_mem_arr = Array.append mem.memory (Array.make mem.len Any) in
-      { memory=new_mem_arr; len=Array.length new_mem_arr }
-  in
+let allocn (mem : memory) (size : int) : adress * memory =
+  if size < 0 then
+    failwith "allocn: negative size"
+  else
+    let rec ensure_capacity (mem : memory) : memory =
+      let capacity = Array.length mem.memory in
+      if mem.len + size <= capacity then
+        mem
+      else
+        let new_mem_arr =
+          (* On a new = 2 * prev en taille*)
+          Array.append mem.memory (Array.make (capacity) Any)
+        in
+        ensure_capacity { mem with memory = new_mem_arr }
+    in
 
-  let fresh_add = mem.len in
-  fresh_add, { mem with len = mem.len+size } 
+    let mem = ensure_capacity mem in
+    let fresh_add = mem.len in
+    (fresh_add, { mem with len = mem.len + size })
 
-let alloc (mem: memory): adress * memory = 
+let alloc (mem : memory) : adress * memory =
   allocn mem 1
 
 (***********  MAIN CORE OF EVALUATION ****************************************)
@@ -301,7 +306,6 @@ and eval_expr (env: environement) (mem: memory): expr -> value * memory = functi
       let i = Helper.match_value_for_InZ v2 "ASTVset(e2)" in
 
       let v3, mem''' = eval_expr env mem'' e3 in
-      (* FIXME NOTE: dans la spec on affecte directement v3 à la mémoire alors qu'on accepte pas tout *)
       let memory_v3 = Helper.match_value_for_mem_value v3 "ASTVset(e3)" in
       
       mem'''.memory.(a+i) <- memory_v3;
