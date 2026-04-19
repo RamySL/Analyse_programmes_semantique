@@ -1,0 +1,4 @@
+[
+CONST x int 0;
+SET (nth x 0) 1
+]

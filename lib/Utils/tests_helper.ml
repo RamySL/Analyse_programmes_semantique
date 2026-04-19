@@ -41,6 +41,11 @@ let l_test_2 = [
   (Manip_sys.testfile_name "2" 4, "OK", [33]); (* Matrice *)
   (Manip_sys.testfile_name "2" 5, "OK", [1]); (* tableau de bool *)
   (Manip_sys.testfile_name "2" 6, "OK", [99]); (* mutation de tableau par procédure *)
+
+  (Manip_sys.testfile_name "2" 7,  "KO", []); (* alloc sur bool*)
+  (Manip_sys.testfile_name "2" 8,  "KO", []); (* len sur int *)
+  (Manip_sys.testfile_name "2" 9,  "KO", []); (* nth sur non tableau*)
+  (Manip_sys.testfile_name "2" 10, "KO", []); (* vset de mauvais type *)
 ]
 
 (* Map entre la version d'aps et sa suite de tests*)

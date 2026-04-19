@@ -57,7 +57,7 @@ let lunch aps_version =
 
 let _ =
   (* None pour lancer les tests de toutes les versions *)
-  let test_number = Some "1a" in
+  let test_number = Some "2" in
 
   match test_number with
     | Some i -> lunch i;
