@@ -1,0 +1,4 @@
+[
+FUN f int [x:int] true;
+ECHO 0
+]

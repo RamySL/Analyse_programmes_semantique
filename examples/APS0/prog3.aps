@@ -1,1 +1,4 @@
-[ ECHO (add 42 (add x 42)) ]
+[
+FUN makeAdder (int -> int) [x:int] [y:int] (add x y);
+ECHO ((makeAdder 7) 5)
+]

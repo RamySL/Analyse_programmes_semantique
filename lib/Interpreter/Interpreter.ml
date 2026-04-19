@@ -240,7 +240,12 @@ and eval_expr (env: environement) (mem: memory): expr -> value * memory = functi
       begin match f, vs with
         | "not", [InZ n] ->
             InZ ((StringMap.find f pi1) n), new_mem
-        | ("eq" | "lt" | "add" | "sub" | "mul" | "div"), [InZ n1; InZ n2] ->
+        | "div", [InZ n1; InZ n2] ->
+          if (n2 = 0) 
+            then failwith "Division by 0"
+          else
+            InZ ((StringMap.find f pi2) n1 n2), new_mem
+        | ("eq" | "lt" | "add" | "sub" | "mul" ), [InZ n1; InZ n2] ->
             InZ ((StringMap.find f pi2) n1 n2), new_mem
         | _ ->
             let l = List.map (fun v -> Printf.sprintf "%s" (Helper.string_of_value v) ) vs in

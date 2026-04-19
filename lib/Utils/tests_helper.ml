@@ -1,14 +1,24 @@
 (* Liste de tests: nom de fichier, resultat de typage attendu, et resultat d'evaluation attendu *)
 
 let l_test_0 = [
-  (Manip_sys.testfile_name "0" 0, "OK", Some [11]);
-  (Manip_sys.testfile_name "0" 1, "KO", None);
-  (Manip_sys.testfile_name "0" 2, "KO", None);
-  (Manip_sys.testfile_name "0" 3, "KO", None);
-  (Manip_sys.testfile_name "0" 4, "OK", Some [1]);
-  (Manip_sys.testfile_name "0" 5, "OK", Some [45]);
-  (Manip_sys.testfile_name "0" 6, "OK", Some [25]);
-  (Manip_sys.testfile_name "0" 7, "OK", Some [54])
+  (Manip_sys.testfile_name "0" 0, "OK", Some [6]); (* lambda *)
+  (Manip_sys.testfile_name "0" 1, "KO", None); (* variable non déclarée*)
+  (Manip_sys.testfile_name "0" 2, "KO", None); (* variable non déclarée*)
+  (Manip_sys.testfile_name "0" 3, "OK", Some [12]); (* fonction qui retourne une fonction *)
+  (Manip_sys.testfile_name "0" 4, "OK", Some [1]); (* PRIM *)
+  (Manip_sys.testfile_name "0" 5, "OK", Some [14]); (* Portée statique *)
+  (Manip_sys.testfile_name "0" 6, "OK", Some [25]); (* fonction simple *)
+  (Manip_sys.testfile_name "0" 7, "OK", Some [120]); (* factoriel *)
+  (Manip_sys.testfile_name "0" 8,  "OK", Some [7]); (* if *)
+  (Manip_sys.testfile_name "0" 9,  "OK", Some [2]); (* and*)
+  (Manip_sys.testfile_name "0" 10, "OK", Some [1]); (* or *)
+  (Manip_sys.testfile_name "0" 11, "OK", None); (*division par zéro*)
+
+  (Manip_sys.testfile_name "0" 12, "KO", None); (* init avec mauvais type*)
+  (Manip_sys.testfile_name "0" 13, "KO", None); (* mauvais type de retour *)
+  (Manip_sys.testfile_name "0" 14, "KO", None); (* mauvais argument *)
+  (Manip_sys.testfile_name "0" 15, "KO", None); (* manque un argument *)
+  (Manip_sys.testfile_name "0" 16, "KO", None); (* type différent pour les deux branches*)
 ]
 
 let l_test_1 = [

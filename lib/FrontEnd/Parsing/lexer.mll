@@ -19,7 +19,7 @@
 }
 
 rule token = parse
-    [' ' '\t' '\r']       { token lexbuf }     (* skip blanks *)
+  | [' ' '\t' '\r']       { token lexbuf }     (* skip blanks *)
   | '\n'                  { Lexing.new_line lexbuf; token lexbuf }
   | '['              { LBRA }
   | ']'              { RBRA }
@@ -59,7 +59,7 @@ rule token = parse
   | "vset"            { VSET }
   | "vec"             { VEC }
 
-  | ['0'-'9']+('.'['0'-'9'])? as lxm { NUM(int_of_string lxm) }
+  | '-'?['0'-'9']+ as lxm { NUM(int_of_string lxm) }
   | ['a'-'z']['a'-'z''A'-'Z''0'-'9']* as lxm { IDENT(lxm) }
   | _ as c {
     let p = Lexing.lexeme_start_p lexbuf in

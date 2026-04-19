@@ -98,7 +98,6 @@ stat:
 
 (* APS2 *)
 lvalue:
-  (* FIXME: ASTId(id) *)
   | id=IDENT                            { ASTLvId  id }
   | LPAR NTH lv=lvalue e=expr RPAR      { ASTLvNth (lv, e) }
 ;

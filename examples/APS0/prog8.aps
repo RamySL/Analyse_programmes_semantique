@@ -1,0 +1,4 @@
+[
+FUN REC loop int [x:int] (loop x);
+ECHO (if true 7 (loop 0))
+]

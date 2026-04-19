@@ -1,0 +1,4 @@
+[
+FUN REC loop bool [x:int] (loop x);
+ECHO (if (or true (loop 0)) 1 2)
+]

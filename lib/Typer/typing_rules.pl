@@ -40,7 +40,6 @@ type_def(G, fun_rec(F, T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G]) 
     type_expr([(F, (T_PARAMS, T_RET)) | G_EVAL], BODY, T_RET).
 
 /* Note: besoin de rajouter cette règle pour empecher la création des ref(vec(T)), pcq par construction vec est mutable */
-/* FIXME: T peut etre que int ou bool */
 type_def(G, var(ID, T), [(ID, ref(T)) | G]) :- correct_var_types(T).
 
 type_def(G, proc(P, ID_T_PARAMS, BODY), [(P, (T_PARAMS, void)) | G]) :- 
@@ -107,13 +106,11 @@ type_expr(G, or(E1,E2), bool) :- type_expr(G, E1, bool), type_expr(G, E2, bool).
 type_expr(G, id(X), T) :- find(G, X, ref(T)).
 /* IDV */
 type_expr(G, id(X), T) :- find(G, X, T).
+
 type_expr(G, app(FCT, ARGS), T_RET) :-
     type_expr(G, FCT, (T_PARAMS, T_RET)),
     match_exprs_types(G, ARGS, T_PARAMS).
-/*TODO: repition pour app  ?*/
-type_expr(G, app(FCT, ARGS), T_RET) :-
-    type_expr(G, FCT, (T_PARAMS, T_RET)),
-    match_exprs_types(G, ARGS, T_PARAMS).
+
 type_expr(G, abs(ID_T_PARAMS, BODY), (T_PARAMS, T_RET)) :-
     add_list_context(G, ID_T_PARAMS, NEW_G),
     type_expr(NEW_G, BODY, T_RET),

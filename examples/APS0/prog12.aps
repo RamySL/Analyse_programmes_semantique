@@ -1,0 +1,4 @@
+[
+CONST x bool 0;
+ECHO 1
+]
