@@ -1,0 +1,4 @@
+[
+CONST v (vec (vec int)) (alloc 0);
+ECHO (len (nth v 0))
+]

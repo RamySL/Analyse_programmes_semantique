@@ -1,0 +1,4 @@
+[
+CONST v (vec int) (alloc 1);
+SET (nth v 1) 7
+]

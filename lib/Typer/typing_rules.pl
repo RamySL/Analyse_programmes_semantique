@@ -120,7 +120,7 @@ type_expr(G, abs(ID_T_PARAMS, BODY), (T_PARAMS, T_RET)) :-
     get_types(ID_T_PARAMS, T_PARAMS).
 /* APS2 */
 type_expr(G, alloc(E), vec(T)) :- 
-    is_type(T), 
+    correct_alloc_type(T), 
     type_expr(G, E, int).
 
 type_expr(G, nth(E1, E2), T) :- 
@@ -132,12 +132,8 @@ type_expr(G, len(E), int) :-
     type_expr(G, E, vec(T)),
     is_type(T).
 
-/* NOTE: mentionné dans la spec mais obligé de contraindre E3 qu'à etre de int, ou de block 
-    pour permettre qu'il soit mis en mémoire */
-
 type_expr(G, vset(E1, E2, E3), vec(T)) :- 
     type_expr(G, E1, vec(T)),
-    correct_alloc_type(T),
     type_expr(G, E2, int),
     type_expr(G, E3, T).
 
