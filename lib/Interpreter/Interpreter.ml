@@ -129,10 +129,10 @@ and eval_stat (env: environement) (mem: memory) (out: output): stat ->  memory *
         eval_stat env mem'' out' (ASTWhile(e, bk))
       else mem', out
 
-    | ASTCall(e, es) -> 
+    | ASTCall(id, es) -> 
       (*APP et APPR*)
-      let vp, mem' = eval_expr env mem e in
-      let new_mem, vs = Helper.eval_es (eval_exprP env) mem' es in
+      let vp = snd (List.find (fun (id', _) -> id = id') env) in
+      let new_mem, vs = Helper.eval_es (eval_exprP env) mem es in
       begin match vp with
         | InP (bk, params, env') ->
             eval_block (Helper.bind env' params vs) new_mem out bk

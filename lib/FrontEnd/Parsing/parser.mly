@@ -93,7 +93,7 @@ stat:
   | WHILE e=expr b=block      { ASTWhile(e, b)}
   (*APS1a*)
   (*FIXME: on doit avoir un IDENT pas une expr *)
-  | CALL e=expr es=list(exprP)     { ASTCall(e, es) }
+  | CALL id=IDENT es=list(exprP)     { ASTCall(id, es) }
 ;
 
 (* APS2 *)

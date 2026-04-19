@@ -48,7 +48,7 @@ and stat =
     | ASTSet of lvalue * expr
     | ASTIfStat of expr * block * block
     | ASTWhile of expr * block
-    | ASTCall of expr * exprP list
+    | ASTCall of string * exprP list
 
 (* APS2 *)
 (* On définit qd même un type lvalue même si c'est un sous type de 

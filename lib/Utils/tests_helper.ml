@@ -22,7 +22,7 @@ let l_test_0 = [
 ]
 
 let l_test_1 = [
-  (Manip_sys.testfile_name "1" 0, "OK", Some [3]);
+  (Manip_sys.testfile_name "1" 0, "OK", Some [3]); 
   (Manip_sys.testfile_name "1" 1, "OK", Some [7]);
   (Manip_sys.testfile_name "1" 2, "OK", Some [1]);
   (Manip_sys.testfile_name "1" 3, "OK", Some [9]);
@@ -32,11 +32,12 @@ let l_test_1 = [
   (Manip_sys.testfile_name "1" 7, "OK", Some [1; 2; 3; 4; 5]);
   (Manip_sys.testfile_name "1" 8, "OK", Some [42]);
   (Manip_sys.testfile_name "1" 9, "OK", Some [52]);
+  (Manip_sys.testfile_name "1" 10, "OK", Some [5; 5]); (* procédure d'ordre sup *)
+  (Manip_sys.testfile_name "1" 11, "KO", None); (* Set sur Const *)
 ]
 
 let l_test_1a = [
-  (Manip_sys.testfile_name "1a" 0, "KO", None); (* Set sur Const *)
-  (Manip_sys.testfile_name "1a" 1, "OK", Some [5]);
+  (Manip_sys.testfile_name "1a" 1, "OK", Some [5]); (* 'var' et 'adr' utilisé sur une variable comme ça doit se faire*)
   (Manip_sys.testfile_name "1a" 2, "KO", None); (* Constante mais declarée comme var dans la signature *)
   (Manip_sys.testfile_name "1a" 3, "KO", None); (* Manque le var dans la signature *)
   (* TODO: ici ya pas d'erreur parceque VAR x int introduit deja x avec ref(int) donc l'absence de (adr x) ne pose pas de pb *)

@@ -83,7 +83,7 @@ let rec pp_stat fmt s =
     | ASTSet(lv, e) -> fprintf fmt "set(%a, %a)" pp_lvalue lv pp_expr e
     | ASTIfStat(e, bk1, bk2) -> fprintf fmt "if_stat(%a,%a,%a)" pp_expr e pp_block bk1 pp_block bk2
     | ASTWhile(e, bk) -> fprintf fmt "while(%a,%a)" pp_expr e pp_block bk
-    | ASTCall(e, eps) -> fprintf fmt "call(%a,[%a])" pp_expr e pp_exprPs eps
+    | ASTCall(id, eps) -> fprintf fmt "call(id(%s),[%a])" id pp_exprPs eps
 
 and pp_lvalue fmt lv = 
     match lv with 

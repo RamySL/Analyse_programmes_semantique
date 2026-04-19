@@ -1,0 +1,5 @@
+[
+PROC apply [f:(int -> void), x:int] [ CALL f x ];
+PROC printTwice [n:int] [ ECHO n; ECHO n ];
+CALL apply printTwice 5
+]
