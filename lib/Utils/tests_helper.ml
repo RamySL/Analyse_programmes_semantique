@@ -40,7 +40,6 @@ let l_test_1a = [
   (Manip_sys.testfile_name "1a" 1, "OK", Some [5]); (* 'var' et 'adr' utilisé sur une variable comme ça doit se faire*)
   (Manip_sys.testfile_name "1a" 2, "KO", None); (* Constante mais declarée comme var dans la signature *)
   (Manip_sys.testfile_name "1a" 3, "KO", None); (* Manque le var dans la signature *)
-  (* TODO: ici ya pas d'erreur parceque VAR x int introduit deja x avec ref(int) donc l'absence de (adr x) ne pose pas de pb *)
   (Manip_sys.testfile_name "1a" 4, "KO", None); (* CALL sans adr pour l'argument *)
 ]
 

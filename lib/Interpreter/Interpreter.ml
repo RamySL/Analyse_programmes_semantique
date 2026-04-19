@@ -80,7 +80,6 @@ and eval_lvalue (env: environement) (mem: memory): lvalue -> adress * memory = f
 
     |ASTLvNth (lv, e) ->
       let a1, mem' = eval_lvalue env mem lv in
-      (*NOTE: dans la spec mémoire sous entendu à avoir une value dedans*)  
       let a2, _ = Helper.match_value_for_MemoryBlock mem.memory.(a1) "ASTLvNth(lv)" in
       let ve, mem'' = eval_expr env mem' e in
       let i = Helper.match_value_for_InZ ve "ASTLVNth(ve)" in
@@ -233,8 +232,6 @@ and eval_expr (env: environement) (mem: memory): expr -> value * memory = functi
 
     | ASTApp (ASTId f, es) when StringMap.mem f pi1 || StringMap.mem f pi2 ->
       (*PRIM1 et PRIM2*)
-      (*TODO: regarde c'est quoi la regle PRIM dans APS1a*)
-
       let new_mem, vs = Helper.eval_es (eval_expr env) mem es in
 
       begin match f, vs with

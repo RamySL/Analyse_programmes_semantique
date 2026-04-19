@@ -1,4 +1,3 @@
-
 /** RQ :  Il ya une association entre ce qui est choisit dans prologTerm.ml et les noms d'atom ici **/
 
 main :- read(user_input, X), type_check(X).
@@ -105,7 +104,7 @@ type_expr(G, or(E1,E2), bool) :- type_expr(G, E1, bool), type_expr(G, E2, bool).
 /* IDR */
 type_expr(G, id(X), T) :- find(G, X, ref(T)).
 /* IDV */
-type_expr(G, id(X), T) :- find(G, X, T).
+type_expr(G, id(X), T) :- find(G, X, T), T \= ref(_).
 
 type_expr(G, app(FCT, ARGS), T_RET) :-
     type_expr(G, FCT, (T_PARAMS, T_RET)),
@@ -136,11 +135,6 @@ type_expr(G, vset(E1, E2, E3), vec(T)) :-
 
 /* Expressions d'arguments APS1a */
 type_exprP(G, adr(id(X)), ref(T)) :- find(G, X, ref(T)).
-/* TODO: détaille à mettre dans le rapport que ça : type_exprP(G, E, T) :- type_expr(G, E, T).
-tout seule, ça ne suffit pas, pour imposer que l'absence de adr ne permette pas de d'effet de bord mémoire.
-*/
-/*FIXME: Problème de ref(ref(ref)) */
-type_exprP(G, E, T) :- type_expr(G, E, ref(T)). /* Puisque pas de 'adr' on unwrap le ref pour ne pas permettre de SET */
 type_exprP(G, E, T) :- type_expr(G, E, T).
 
 /* APS1 */
@@ -195,7 +189,7 @@ extrait la listes des identificateurs des paramètres associés à leur type, ma
 */
 extract_id_var([], []).
 extract_id_var([(var(ID), T) | TAIL], [(ID, ref(T)) | TS]) :- extract_id_var(TAIL, TS).
-extract_id_var([(ID, T) | TAIL], [(ID, T) | TS]) :- extract_id_var(TAIL, TS).
+extract_id_var([(ID, T) | TAIL], [(ID, T) | TS]) :- ID \= var(_), extract_id_var(TAIL, TS).
 
 /* member */
 mem(ELT, [ELT | _]).
@@ -209,4 +203,4 @@ correct_alloc_type(vec(T)) :- correct_alloc_type(T).
 correct_alloc_type(T) :- mem(T, [int, bool]).
 
 /** Types accepté par la définiton avec VAR */
-correct_var_types(T) :- mem(T, [int, bool]). 
+correct_var_types(T) :- mem(T, [int, bool]).

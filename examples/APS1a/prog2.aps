@@ -1,5 +1,5 @@
 [
     CONST x int 10;
     PROC inc [var x:int] [ SET x (add x 1) ];
-    CALL inc x
+    CALL inc (adr x)
 ]
