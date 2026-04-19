@@ -66,8 +66,12 @@ and eval_lvalue (env: environement) (mem: memory): lvalue -> adress * memory = f
     |ASTLvNth (ASTLvId id, e) -> 
       let ve, mem' = eval_expr env mem e in
       let i = Helper.match_value_for_InZ ve "ASTLVNeth(ve)" in
-      let adr, _ = Helper.match_value_for_InBlock (snd (List.find (fun (id',_) -> id'=id) env)) "ASTLvNth(lv id)" in
-      adr+i, mem'
+      let adr, size = Helper.match_value_for_InBlock (snd (List.find (fun (id',_) -> id'=id) env)) "ASTLvNth(lv id)" in
+
+      if (i >= 0 && i<size) then 
+        adr+i, mem'
+      else
+        failwith "index out of bounds"
 
     |ASTLvNth (lv, e) ->
       let a1, mem' = eval_lvalue env mem lv in
@@ -271,7 +275,7 @@ and eval_expr (env: environement) (mem: memory): expr -> value * memory = functi
       let v2, mem'' = eval_expr env mem' e2 in
       let i = Helper.match_value_for_InZ v2 "ASTNth(e2)" in
 
-      if(i < size) then 
+      if(i >= 0 && i < size) then 
         (*NOTE: MAP is not with values (spec said ohterwise)*)
         begin 
           match mem.memory.(adr+i) with
@@ -298,7 +302,7 @@ and eval_expr (env: environement) (mem: memory): expr -> value * memory = functi
 
       let v3, mem''' = eval_expr env mem'' e3 in
       (* FIXME NOTE: dans la spec on affecte directement v3 à la mémoire alors qu'on accepte pas tout *)
-      let memory_v3 = Helper.match_value_for_mem_value v3 "ASTVset" in
+      let memory_v3 = Helper.match_value_for_mem_value v3 "ASTVset(e3)" in
       
       mem'''.memory.(a+i) <- memory_v3;
       (InBlock {adr = a; size}, mem''')
