@@ -1,4 +1,6 @@
 
+/** RQ :  Il ya une association entre ce qui est choisit dans prologTerm.ml et les noms d'atom ici **/
+
 main :- read(user_input, X), type_check(X).
 
 type_check(prog(P)) :- type_prog(prog(P), void), write("OK\n").
@@ -16,76 +18,8 @@ context_init([
     (div, ([int, int], int)),
     (add, ([int, int], int))
 ]).
-/** !! Il ya une association entre ce qui est choisit dans prologTerm.ml et les noms d'atom ici **/
-/**
-    Utils
-*/
 
-find([(X,T)|_], X, T).
-
-/* find([(true, bool)], true, T). */ 
-find([_|XS], X, T) :- find(XS, X, T).
-
-/**
-Pultot que de réflechir comme une procédure, plutot avec les prédicat.
-Quand est ce que get_types(ID_Ts, Ts) est vrai ? elle est vrai si Ts
-contient tous les types qui sont dans ID_Ts et dans le meme ordre
-
-get_types([(a,bool), (b, int), (c, test)], TS).
-**/
-get_types([], []).
-get_types([(_, T)], [T]).
-get_types([(_, T) | TAIL], [T | TS]) :- get_types(TAIL, TS).
-/**
-NEW_G représente bien un contexte dans lequel on a TO_ADD @ G quand ?
-add_list_context([(a,bool), (b, int), (c, test)], [(d,string), (e,float)], G).
-*/
-
-add_list_context(G, [], G).
-add_list_context(G, [(X, T) | TAIL], [(X, T) | TAIL2]) :- add_list_context(G, TAIL, TAIL2).
-
-
-/**
-Vérifie que les type des expressions EXPRS match celui de TYPES dans l'ordre
-*/
-
-match_exprs_types(_, [], []).
-
-match_exprs_types(G, [E | ES], [T | TS]) :-  
-    type_expr(G, E, T),
-    match_exprs_types(G, ES, TS).
-
-/**
-Vérifie que les type des expressions EXPRS match celui de TYPES dans l'ordre.
-Version APS1a pour la traitement du passage var valeur/référence
-*/
-
-match_exprPs_types(_, [], []).
-
-match_exprPs_types(G, [E | ES], [T | TS]) :-  
-    type_exprP(G, E, T),
-    match_exprPs_types(G, ES, TS).
-
-/* extrait la listes des identificateurs des paramètres associés à leur type marqué ou non de ref selon qu’ils ont
-été déclarés avec la modalité var ou no
-*/
-
-extract_id_var([], []).
-extract_id_var([(var(ID), T) | TAIL], [(ID, ref(T)) | TS]) :- extract_id_var(TAIL, TS).
-extract_id_var([(ID, T) | TAIL], [(ID, T) | TS]) :- extract_id_var(TAIL, TS).
-
-/* member */
-mem(ELT, [ELT | _]).
-mem(ELT, [_ | TAIL]) :- mem(ELT, TAIL).
-
-/** test si le type donné est un type valide du langage */
-is_type(T) :- mem(T, [int, bool, void, vec(_), ([_|_], _)]). /* le dernier est censé représenté les fcts */
-
-is_memory_type(T) :- mem(T, [int, vec(_)]).
-
-correct_var_types(T) :- mem(T, [int, bool]). 
-
-/* Prog */
+/** Prog */
 type_prog(prog(P), void) :- 
     context_init(G0),
     type_block(G0, P, void).
@@ -93,10 +27,6 @@ type_prog(prog(P), void) :-
 /** Defintions **/
 
 type_def(G, const(X, T, E), [(X, T) | G]) :- type_expr(G, E, T).
-/* 
-Dans l'environnement de type de défintion d'une fonction 
-est définit par un tupe (liste de type de params, type de retour)
-*/
                                                         /* ' * * * -> tret ' */
 type_def(G, fun(F, T_RET, ID_T_PARAMS, BODY), [(F, (T_PARAMS, T_RET)) | G]) :- 
     get_types(ID_T_PARAMS, T_PARAMS),
@@ -212,9 +142,6 @@ type_expr(G, vset(E1, E2, E3), vec(T)) :-
     type_expr(G, E3, T),
     is_memory_type(T).
 
-
-
-
 /* Expressions d'arguments APS1a */
 type_exprP(G, adr(id(X)), ref(T)) :- find(G, X, ref(T)).
 /* TODO: détaille à mettre dans le rapport que ça : type_exprP(G, E, T) :- type_expr(G, E, T).
@@ -228,3 +155,66 @@ type_exprP(G, E, T) :- type_expr(G, E, T).
 type_block(G, block(CS), void) :- type_cmds(G, CS, void).
 
 
+
+/******************************************************************************************
+                                Utils
+******************************************************************************************/
+
+/** 
+Cherche le couple (X,T) dans la liste de couples 
+*/
+find([(X,T)|_], X, T).
+find([_|XS], X, T) :- find(XS, X, T).
+
+/** 
+Etant donnée une liste de (ID, Type) extrait ls types 
+*/
+get_types([], []).
+get_types([(_, T)], [T]).
+get_types([(_, T) | TAIL], [T | TS]) :- get_types(TAIL, TS).
+
+/** 
+Etant donné une liste init de (ID, Type), on lui ajoute ceux présents dans le deuxieme argument 
+*/
+add_list_context(G, [], G).
+add_list_context(G, [(X, T) | TAIL], [(X, T) | TAIL2]) :- add_list_context(G, TAIL, TAIL2).
+
+
+/**
+Vérifie que les type des expressions dans le deuxieme argument match celui du troisieme argument dans l'ordre
+*/
+match_exprs_types(_, [], []).
+match_exprs_types(G, [E | ES], [T | TS]) :-  
+    type_expr(G, E, T),
+    match_exprs_types(G, ES, TS).
+
+/**
+Vérifie que les type des expressions dans le deuxieme argument match celui du troisieme argument dans l'ordre
+Version APS1a pour la traitement du passage var valeur/référence
+*/
+match_exprPs_types(_, [], []).
+match_exprPs_types(G, [E | ES], [T | TS]) :-  
+    type_exprP(G, E, T),
+    match_exprPs_types(G, ES, TS).
+
+/**
+extrait la listes des identificateurs des paramètres associés à leur type, marqué ou non de ref selon qu’ils ont
+été déclarés avec var ou non
+*/
+extract_id_var([], []).
+extract_id_var([(var(ID), T) | TAIL], [(ID, ref(T)) | TS]) :- extract_id_var(TAIL, TS).
+extract_id_var([(ID, T) | TAIL], [(ID, T) | TS]) :- extract_id_var(TAIL, TS).
+
+/* member */
+mem(ELT, [ELT | _]).
+mem(ELT, [_ | TAIL]) :- mem(ELT, TAIL).
+
+/** test si le type donné est un type valide du langage */
+is_type(T) :- mem(T, [int, bool, void, vec(_), ([_|_], _)]). /* le dernier est censé représenté les fcts */
+
+/** Type pour lesquelles ALLOC est valide */
+correct_alloc_type(vec(T)) :- correct_alloc_type(T).
+correct_alloc_type(T) :- mem(T, [int, bool]).
+
+/** Types accepté par la définiton avec VAR */
+correct_var_types(T) :- mem(T, [int, bool]). 

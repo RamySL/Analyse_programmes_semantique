@@ -7,12 +7,15 @@
 (* == Fichier: prologTerm.ml                                               == *)
 (* ==  Génération de termes Prolog                                         == *)
 (* ========================================================================== *)
+
+(*
+ - Ce fichier est résponsable pour la génération des termes Prologue pour le typage.
+ Donc les chaines de caractères qui sont produites, doivent correspendre aux termes, atomes
+ dans ./typing_rules.pl
+*)
 open Ast
 open Format
-
-let sep_cma fmt () = fprintf fmt ", "
-                    (* retourne une fct qui prend une fmt et une liste*)
-let pp_lst_cma p = pp_print_list ~pp_sep:sep_cma p
+open Pretty
 
 let rec pp_type fmt t = 
   match t with 

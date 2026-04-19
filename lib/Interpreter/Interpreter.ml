@@ -1,7 +1,6 @@
 open Types
 open Ast
 module StringMap = Map.Make(String)
-module AdressMap = Map.Make(AdressOrd)
 
 let pi1 = StringMap.of_list [("not", fun n -> if n = 1 then 0 else 1);]
 let pi2 = StringMap.of_list [("eq", fun n1 n2 -> if n1 = n2 then 1 else 0);

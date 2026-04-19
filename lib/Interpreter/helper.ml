@@ -1,9 +1,7 @@
 open Types
-(*
-  Retourne le string représentant l'environement
-*)
-let rec string_of_environement (e: environement) = 
-  
+
+(** Retourne le string représentant l'environement *)
+let rec string_of_environement (e: environement) =
   let l = List.map (fun (id, v) -> Printf.sprintf "(%s, %s)" id (string_of_value v) ) e in
   String.concat "\n" l
 

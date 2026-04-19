@@ -17,6 +17,7 @@
     let col = p.Lexing.pos_cnum - p.Lexing.pos_bol + 1 in
     raise (SyntaxError (Printf.sprintf "%s at line %d, column %d" msg line col))
 }
+
 rule token = parse
     [' ' '\t' '\r']       { token lexbuf }     (* skip blanks *)
   | '\n'                  { Lexing.new_line lexbuf; token lexbuf }

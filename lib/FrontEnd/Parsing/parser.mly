@@ -37,11 +37,10 @@ open Ast
 %type <Ast.prog> prog
 
 %start prog
-(* un autre start avec liste de prédictions et modifier dans manipSys*)
 %%
 
 (*
-  - separated_list(COMMA, option(expression)). Trouvé dans https://gallium.inria.fr/~fpottier/menhir/manual.pdf page 11
+  https://gallium.inria.fr/~fpottier/menhir/manual.pdf
 *)
 
 prog: 
@@ -50,6 +49,7 @@ prog:
 
 block:
   LBRA cs=cmds RBRA        { cs }
+;
 
 cmds:
   s=stat                    { [ASTStat s] }
@@ -76,7 +76,6 @@ _type:
 | LPAR VEC ty=_type RPAR        { ASTVec(ty) }
 ;
 
-
 arg:
     id=IDENT COL ty=_type             { ASTArg(id, ty) }
 ;
@@ -84,6 +83,7 @@ arg:
 argP:
   | a=arg                             { ASTArg' a}
   | VARP id=IDENT COL ty=_type        { ASTArgP(id, ty) }
+;
 
 stat:
   ECHO e=expr                  { ASTEcho(e) }
@@ -101,6 +101,7 @@ lvalue:
   (* FIXME: ASTId(id) *)
   | id=IDENT                            { ASTLvId  id }
   | LPAR NTH lv=lvalue e=expr RPAR      { ASTLvNth (lv, e) }
+;
 
 expr:
   n=NUM                         { ASTNum(n) }
@@ -115,13 +116,12 @@ expr:
 | LPAR LEN e=expr RPAR          { ASTLen(e) }
 | LPAR NTH e1=expr e2=expr RPAR { ASTNth(e1, e2) }
 | LPAR VSET e1=expr e2=expr e3=expr RPAR { ASTVset(e1, e2, e3) }
-
 ;
 
 (*APS1a*)
 exprP: 
 | e=expr                        { ASTexpr e }
 | LPAR ADR id=IDENT RPAR        { ASTAdr id }
-
+;
 
 %%

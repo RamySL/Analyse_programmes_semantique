@@ -11,7 +11,6 @@
 type _type = 
    ASTBool
   | ASTInt
-  (*TODO: unused ?*)
   | ASTFunT of _type list * _type
   | ASTVoid
   | ASTVec of _type
@@ -66,7 +65,6 @@ and def =
   | ASTVar of string * _type
   | ASTProc of string * argP list * block
   | ASTProcREC of string * argP list * block
-
 
 (* type interne *)
 and cmd =
