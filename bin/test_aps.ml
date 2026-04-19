@@ -77,6 +77,7 @@ let lunch aps_version =
   Format.printf "\n********* Tests de APS %s ***********\n" aps_version;
   test_pipeline (SMap.find aps_version version_test_suit)
 
+(* Lecture de la version d'aps à lancer depuis la ligne de commande et lancement du pipeline*)
 let _ =
   let argc = Array.length Sys.argv in
   let prog_name = Sys.argv.(0) in

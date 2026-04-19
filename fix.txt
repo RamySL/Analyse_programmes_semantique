@@ -1,4 +1,0 @@
-- on peut déclarer un tableau avec CONST !!!
-
-- Rajoute dans le typeur une contraibe correctVcet pour contraindre la construction de vecteur 
-de cloture par exemple, tu la met dans alloc, dans CONST

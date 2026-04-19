@@ -5,7 +5,6 @@ let rec string_of_environement (e: environement) =
   let l = List.map (fun (id, v) -> Printf.sprintf "(%s, %s)" id (string_of_value v) ) e in
   String.concat "\n" l
 
-
 and string_of_value (v: value) = 
   match v with
     | InZ n -> Printf.sprintf "InZ(%d)" n 
@@ -31,10 +30,8 @@ and string_of_rec_closure (rc:rec_closure) =
 and string_of_output (out:output) =
   String.concat " " (List.map (fun o -> string_of_int o) out)
 
-
 let print_environement (env: environement) = 
     Printf.printf "Environement : \n%s \n" (string_of_environement env)
-
 
 (**Retourne l'environement env etendu avec tous les binding formé par les éléments
     de params et les valeurs de vs*)

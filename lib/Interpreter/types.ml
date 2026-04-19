@@ -27,7 +27,6 @@ and adress = int
 
 and memory_block =  {adr : adress; size:int} 
 
-(* Absence de valeur ou bien valeur courante*)
 and memory_value = Any | Current of int | MemoryBlock of memory_block
 
 (*and memory = adress ->  memory_value*) (* non réaliste avec l'implem*)
