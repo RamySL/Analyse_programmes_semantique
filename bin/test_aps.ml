@@ -1,7 +1,7 @@
 open Aps_syntax.Manip_sys
 open Aps_syntax.PrologTerm
 open Aps_syntax.Interpreter
-open Aps_syntax.Tests_helper
+open Aps_syntax.Tests_suits
 
 (** Exécute le pipeline complet sur un fichier :
     1) parsing
